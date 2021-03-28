@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:trunk/screens/components/navdrawer.dart';
+import '../../constants.dart';
 import 'components/nbcard.dart';
 
 class Notebook extends StatefulWidget {
@@ -7,9 +9,29 @@ class Notebook extends StatefulWidget {
 }
 
 class _NotebookState extends State<Notebook> {
+  // To switch app bar on long press
+  static final AppBar _defaultBar = AppBar(
+    title: Text(
+      "Trunk",
+      style: TextStyle(
+        fontWeight: FontWeight.w900,
+      ),
+    ),
+  );
+
+  AppBar _appBar = _defaultBar;
+
   List<String> notebooks = [
-    "password",
+    "Password",
   ];
+
+  int _selected;
+
+  void changeAppbarToDefault() {
+    setState(() {
+      _appBar = _defaultBar;
+    });
+  }
 
   Future<String> getNotebook(BuildContext context) {
     TextEditingController customController = TextEditingController();
@@ -17,7 +39,10 @@ class _NotebookState extends State<Notebook> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("New Notebook"),
+            title: Text(
+              "New Notebook",
+              textAlign: TextAlign.center,
+            ),
             content: TextField(
               autofocus: true,
               onSubmitted: (value) {
@@ -33,16 +58,34 @@ class _NotebookState extends State<Notebook> {
               },
               textInputAction: TextInputAction.go,
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.all(10),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 isDense: true,
-                hintText: "Enter the name of notebook",
-                border: OutlineInputBorder(borderSide: BorderSide(width: 1.0)),
+                hintText: "Notebook Name",
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(width: 1.0),
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
+              style: TextStyle(fontSize: 18),
               controller: customController,
             ),
             actions: <Widget>[
-              MaterialButton(
-                elevation: 5.0,
+              TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 30.0)),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Colors.white),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.deepPurple),
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                      side: BorderSide.none,
+                    ),
+                  ),
+                ),
                 child: Text("Add"),
                 onPressed: () {
                   String value = customController.text.toString();
@@ -58,8 +101,21 @@ class _NotebookState extends State<Notebook> {
                   }
                 },
               ),
-              MaterialButton(
-                elevation: 5.0,
+              TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 20.0)),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Colors.white),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.grey),
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                      side: BorderSide.none,
+                    ),
+                  ),
+                ),
                 child: Text("Cancel"),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -70,51 +126,45 @@ class _NotebookState extends State<Notebook> {
         });
   }
 
+  void optionsAction(String option) {
+    if (option == DELETE) {
+      setState(() {
+        notebooks.removeAt(_selected);
+        _appBar = _defaultBar;
+      });
+    } else if (option == SHARE_WITH_FRIEND) {
+      print("Sharing With Friend");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Trunk"),
+    AppBar _selectBar = AppBar(
+      title: Text(""),
+      leading: GestureDetector(
+        onTap: () {
+          changeAppbarToDefault();
+        },
+        child: Icon(Icons.close),
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-                child: Text(
-              "Trunk",
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            )),
-            ListTile(
-              title: Text("Home"),
-              onTap: () {
-                print("home");
-              },
-            ),
-            ListTile(
-              title: Text("About"),
-              onTap: () {
-                print("about");
-              },
-            ),
-            ListTile(
-              title: Text("Friends List"),
-              onTap: () {
-                print("friends list");
-              },
-            ),
-            ListTile(
-              title: Text("Exit"),
-              onTap: () {
-                print("exit");
-              },
-            ),
-          ],
+      actions: <Widget>[
+        PopupMenuButton<String>(
+          onSelected: optionsAction,
+          itemBuilder: (BuildContext context) {
+            return options.map((option) {
+              return PopupMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }).toList();
+          },
         ),
-      ),
+      ],
+    );
+
+    return Scaffold(
+      appBar: _appBar,
+      drawer: NavDrawer(),
       body: Column(
         children: <Widget>[
           SizedBox(
@@ -132,12 +182,18 @@ class _NotebookState extends State<Notebook> {
                 onTap: () {
                   Navigator.pushNamed(context, '/notes');
                 },
+                onLongPress: () {
+                  setState(() {
+                    _appBar = _selectBar;
+                    _selected = index;
+                  });
+                },
               ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           try {
             getNotebook(context).then((value) {
@@ -154,8 +210,10 @@ class _NotebookState extends State<Notebook> {
             );
           }
         },
-        child: Icon(Icons.add),
+        label: Text("New"),
+        icon: Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

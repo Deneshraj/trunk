@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:trunk/screens/notes/components/addnote.dart';
 import 'package:trunk/model/note.dart';
+import 'package:trunk/screens/notes/components/editnote.dart';
+
+import '../../constants.dart';
 
 class Notes extends StatefulWidget {
   @override
@@ -7,139 +11,108 @@ class Notes extends StatefulWidget {
 }
 
 class _NotesState extends State<Notes> {
-  List<String> notes = [];
+  static final AppBar _defaultBar = AppBar(
+    title: Text("Notes"),
+  );
 
-  Future<Note> addNote(BuildContext context) {
-    TextEditingController titleController = TextEditingController();
-    TextEditingController contentController = TextEditingController();
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Enter New Note"),
-        content: Container(
-          height: 200,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: TextField(
-                  autofocus: true,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    isDense: true,
-                    hintText: "Enter the Title",
-                    border:
-                        OutlineInputBorder(borderSide: BorderSide(width: 1.0)),
-                  ),
-                  controller: titleController,
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  autofocus: true,
-                  minLines: 1,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    isDense: true,
-                    hintText: "Enter the Content",
-                    border:
-                        OutlineInputBorder(borderSide: BorderSide(width: 1.0)),
-                  ),
-                  controller: contentController,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          MaterialButton(
-            elevation: 5.0,
-            child: Text("Add"),
-            onPressed: () {
-              String value = titleController.text.toString();
-              if (value.isNotEmpty) {
-                Note note = Note(value, contentController.text.toString());
-                Navigator.of(context).pop(note);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Please Enter a Valid Note")),
-                );
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-          MaterialButton(
-            elevation: 5.0,
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
+  AppBar _appBar = _defaultBar;
+
+  int _selected;
+
+  void changeAppbarToDefault() {
+    setState(() {
+      _appBar = _defaultBar;
+    });
+  }
+
+  List<Note> notes = [];
+
+  void optionsAction(String option) {
+    if (option == DELETE) {
+      setState(() {
+        notes.removeAt(_selected);
+        _appBar = _defaultBar;
+      });
+    } else if (option == SHARE_WITH_FRIEND) {
+      print("Sharing With Friend");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Notes"),
+    AppBar _selectBar = AppBar(
+      title: Text(""),
+      leading: GestureDetector(
+        onTap: () {
+          changeAppbarToDefault();
+        },
+        child: Icon(Icons.close),
       ),
+      actions: <Widget>[
+        PopupMenuButton<String>(
+          onSelected: optionsAction,
+          itemBuilder: (BuildContext context) {
+            return options.map((option) {
+              return PopupMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }).toList();
+          },
+        ),
+      ],
+      backgroundColor: Colors.deepPurple,
+    );
+    return Scaffold(
+      appBar: _appBar,
       body: ListView.builder(
         itemCount: notes.length,
         itemBuilder: (context, index) => Card(
           elevation: 5,
           margin: EdgeInsets.all(10),
           child: ListTile(
-            title: Text(notes[index]),
-            onTap: () {
-              print("${notes[index]}");
+            title: Text(notes[index].title),
+            onLongPress: () {
+              setState(() {
+                _appBar = _selectBar;
+                _selected = index;
+              });
+            },
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditNote(note: notes[index]),
+                ),
+              );
+
+              if (result != null) {
+                setState(() {
+                  notes[index] = result;
+                });
+              }
             },
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          addNote(context).then((note) {
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddNote(),
+            ),
+          );
+          if (result != null) {
             setState(() {
-              notes.add(note.title);
+              notes.add(result);
             });
-          });
+          }
         },
-        child: Icon(Icons.add),
+        label: Text("Note"),
+        icon: Icon(Icons.add),
       ),
-    );
-  }
-}
-
-class NotesList extends StatelessWidget {
-  const NotesList({
-    Key key,
-    this.note,
-  }) : super(key: key);
-
-  final String note;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        print("$note");
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(width: 1.0, color: Colors.grey),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: Text(note),
-        ),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

@@ -4,15 +4,15 @@ import 'package:trunk/screens/notebook/notebook.dart';
 import 'package:trunk/screens/notes/notes.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(Trunk());
 }
 
-class MyApp extends StatelessWidget {
+class Trunk extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Trunk',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
