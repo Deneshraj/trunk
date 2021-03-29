@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:trunk/screens/notes/components/addnote.dart';
+import 'package:provider/provider.dart';
+import 'package:trunk/db.dart';
+import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
 
@@ -14,10 +16,10 @@ class _NotesState extends State<Notes> {
   static final AppBar _defaultBar = AppBar(
     title: Text("Notes"),
   );
-
   AppBar _appBar = _defaultBar;
-
   int _selected;
+  List<Note> notes = [];
+  bool _initialized = false;
 
   void changeAppbarToDefault() {
     setState(() {
@@ -25,10 +27,42 @@ class _NotesState extends State<Notes> {
     });
   }
 
-  List<Note> notes = [];
+  void updateNotes(DatabaseHelper databaseHelper, int notebookId) {
+    Future<List<Note>> notesListFuture = databaseHelper.getNotesList(notebookId);
+    notesListFuture.then((notesList) {
+      setState(() {
+        notes = notesList;
+        _initialized = true;
+      });
+    }).catchError((error) => print(error));
+  }
 
-  void optionsAction(String option) {
+  void addNote(DatabaseHelper databaseHelper, Note note) async {
+    int result = await databaseHelper.insertNote(note);
+
+    if (result != 0) {
+      showSnackbar(context, "Noted Created Successfully!");
+      updateNotes(databaseHelper, note.notebookId);
+    } else {
+      showSnackbar(context, "Failed to create Note!");
+    }
+  }
+
+  void editNote(DatabaseHelper databaseHelper, Note note, int index) async {
+    int result = await databaseHelper.updateNote(note);
+
+    if (result != 0) {
+      showSnackbar(context, "Noted Updated Successfully!");
+      updateNotes(databaseHelper, note.notebookId);
+    } else {
+      showSnackbar(context, "Failed to update Note!");
+    }
+  }
+
+  void optionsAction(DatabaseHelper databaseHelper, String option) {
     if (option == DELETE) {
+      Note note = notes[_selected];
+      databaseHelper.deleteNote(note);
       setState(() {
         notes.removeAt(_selected);
         _appBar = _defaultBar;
@@ -40,6 +74,14 @@ class _NotesState extends State<Notes> {
 
   @override
   Widget build(BuildContext context) {
+    final int _notebookId = ModalRoute.of(context).settings.arguments;
+    print("$_notebookId");
+    final databaseHelper = Provider.of<DatabaseHelper>(context);
+
+    if (!_initialized) {
+      updateNotes(databaseHelper, _notebookId);
+    }
+
     AppBar _selectBar = AppBar(
       title: Text(""),
       leading: GestureDetector(
@@ -50,7 +92,9 @@ class _NotesState extends State<Notes> {
       ),
       actions: <Widget>[
         PopupMenuButton<String>(
-          onSelected: optionsAction,
+          onSelected: (string) {
+            optionsAction(databaseHelper, string);
+          },
           itemBuilder: (BuildContext context) {
             return options.map((option) {
               return PopupMenuItem<String>(
@@ -87,9 +131,7 @@ class _NotesState extends State<Notes> {
               );
 
               if (result != null) {
-                setState(() {
-                  notes[index] = result;
-                });
+                editNote(databaseHelper, result, index);
               }
             },
           ),
@@ -97,17 +139,13 @@ class _NotesState extends State<Notes> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddNote(),
-            ),
-          );
-          if (result != null) {
-            setState(() {
-              notes.add(result);
-            });
-          }
+          Navigator.pushNamed(context, '/addnote', arguments: _notebookId).then((result) {
+            if (result != null) {
+              Note resultNote = result;
+              // TODO:validate result for null values
+              addNote(databaseHelper, result);
+            }
+          });
         },
         label: Text("Note"),
         icon: Icon(Icons.add),

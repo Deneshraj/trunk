@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:trunk/db.dart';
+import 'package:trunk/model/notebook.dart';
+import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
+import 'package:trunk/screens/components/snackbar.dart';
 import '../../constants.dart';
 import 'components/nbcard.dart';
 
 class Notebook extends StatefulWidget {
+  // TODO:Add Route Name to all screens
+  // Eg., static const routeName = '/notebook';
   @override
   _NotebookState createState() => _NotebookState();
 }
 
 class _NotebookState extends State<Notebook> {
+  // TODO:Add the Update Operation
   // To switch app bar on long press
   static final AppBar _defaultBar = AppBar(
     title: Text(
@@ -18,14 +27,51 @@ class _NotebookState extends State<Notebook> {
       ),
     ),
   );
-
+  Notebooks passwordNb = Notebooks(name: PASSWORD, createdAt: DateTime.now());
   AppBar _appBar = _defaultBar;
-
-  List<String> notebooks = [
-    "Password",
-  ];
-
+  List<Notebooks> notebooks = [];
+  bool _initialized = false;
   int _selected;
+
+  void initState() {
+    super.initState();
+  }
+
+  void updateNotebooks(DatabaseHelper databaseHelper) async {
+    final Future<Database> dbFuture = databaseHelper.initDb();
+    dbFuture.then((db) {
+      Future<List<Notebooks>> notebookListFuture =
+          databaseHelper.getNotebookList();
+      notebookListFuture.then((notebookList) {
+        setState(() {
+          notebooks = [passwordNb] + notebookList;
+          _initialized = true;
+        });
+      });
+    });
+  }
+
+  void saveNotebook(DatabaseHelper databaseHelper, Notebooks notebook) async {
+    if (notebooks.contains(notebook)) {
+      showSnackbar(context, "Notebook already created");
+    } else {
+      int result = await databaseHelper.insertNoteBook(notebook);
+      if (result != 0) {
+        updateNotebooks(databaseHelper);
+      } else {
+        showSnackbar(context, "Error creating new notebook!");
+      }
+    }
+  }
+
+  void deleteNotebook(DatabaseHelper databaseHelper, Notebooks notebook) async {
+    int result = await databaseHelper.deleteNotebook(notebook);
+    if (result != 0) {
+      updateNotebooks(databaseHelper);
+    } else {
+      showSnackbar(context, "Error while deleting notebook");
+    }
+  }
 
   void changeAppbarToDefault() {
     setState(() {
@@ -44,13 +90,11 @@ class _NotebookState extends State<Notebook> {
               textAlign: TextAlign.center,
             ),
             content: TextField(
+              // TODO:Extract this widget and create separate widtet
               autofocus: true,
               onSubmitted: (value) {
                 if (value.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text("Please Enter a valid Notebook name!")),
-                  );
+                  showSnackbar(context, "Please Enter a valid Notebook name!");
                   Navigator.of(context).pop();
                 } else {
                   Navigator.of(context).pop(value);
@@ -71,52 +115,23 @@ class _NotebookState extends State<Notebook> {
               controller: customController,
             ),
             actions: <Widget>[
-              TextButton(
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 30.0)),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.deepPurple),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100),
-                      side: BorderSide.none,
-                    ),
-                  ),
-                ),
-                child: Text("Add"),
+              AlertButton(
+                text: "Add",
                 onPressed: () {
                   String value = customController.text.toString();
                   if (value.isNotEmpty) {
                     Navigator.of(context).pop(value);
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text("Please Enter a valid Notebook name!")),
-                    );
+                    showSnackbar(
+                        context, "Please Enter a valid Notebook name!");
 
                     Navigator.of(context).pop();
                   }
                 },
               ),
-              TextButton(
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 20.0)),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.grey),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100),
-                      side: BorderSide.none,
-                    ),
-                  ),
-                ),
-                child: Text("Cancel"),
+              AlertButton(
+                text: "Cancel",
+                backgroundColor: Colors.grey,
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -126,10 +141,10 @@ class _NotebookState extends State<Notebook> {
         });
   }
 
-  void optionsAction(String option) {
+  void optionsAction(DatabaseHelper databaseHelper, String option) {
     if (option == DELETE) {
+      deleteNotebook(databaseHelper, notebooks[_selected]);
       setState(() {
-        notebooks.removeAt(_selected);
         _appBar = _defaultBar;
       });
     } else if (option == SHARE_WITH_FRIEND) {
@@ -139,6 +154,12 @@ class _NotebookState extends State<Notebook> {
 
   @override
   Widget build(BuildContext context) {
+    final databaseHelper = Provider.of<DatabaseHelper>(context); 
+
+    if (!_initialized) {
+      updateNotebooks(databaseHelper);
+    }
+
     AppBar _selectBar = AppBar(
       title: Text(""),
       leading: GestureDetector(
@@ -149,7 +170,9 @@ class _NotebookState extends State<Notebook> {
       ),
       actions: <Widget>[
         PopupMenuButton<String>(
-          onSelected: optionsAction,
+          onSelected: (string) {
+            optionsAction(databaseHelper, string);
+          },
           itemBuilder: (BuildContext context) {
             return options.map((option) {
               return PopupMenuItem<String>(
@@ -177,18 +200,26 @@ class _NotebookState extends State<Notebook> {
                 crossAxisCount: 2,
                 childAspectRatio: 0.75,
               ),
-              itemBuilder: (context, index) => NBCard(
-                text: notebooks[index],
-                onTap: () {
-                  Navigator.pushNamed(context, '/notes');
-                },
-                onLongPress: () {
-                  setState(() {
-                    _appBar = _selectBar;
-                    _selected = index;
-                  });
-                },
-              ),
+              itemBuilder: (context, index) => (notebooks[index].name == PASSWORD)
+                  ? NBCard(
+                      text: notebooks[index].name,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/passwords');
+                      },
+                    )
+                  : NBCard(
+                      text: notebooks[index].name,
+                      onTap: () {
+                        print("${notebooks[index].id}");
+                        Navigator.pushNamed(context, '/notes', arguments: notebooks[index].id);
+                      },
+                      onLongPress: () {
+                        setState(() {
+                          _appBar = _selectBar;
+                          _selected = index;
+                        });
+                      },
+                    ),
             ),
           ),
         ],
@@ -198,16 +229,12 @@ class _NotebookState extends State<Notebook> {
           try {
             getNotebook(context).then((value) {
               if (value != null) {
-                setState(() {
-                  this.notebooks.add(value);
-                });
+                saveNotebook(databaseHelper, Notebooks(name: value, createdAt: DateTime.now()));
               }
             });
           } catch (e) {
             print(e);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Error creating new notebook!")),
-            );
+            showSnackbar(context, "Error creating new notebook!");
           }
         },
         label: Text("New"),

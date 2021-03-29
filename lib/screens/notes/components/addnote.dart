@@ -11,6 +11,7 @@ class _AddNoteState extends State<AddNote> {
   // TODO:Validate the Text that is saved.
   @override
   Widget build(BuildContext context) {
+    int notebookId = ModalRoute.of(context).settings.arguments;
     TextEditingController _titleController = new TextEditingController();
     TextEditingController _notesController = new TextEditingController();
 
@@ -64,7 +65,14 @@ class _AddNoteState extends State<AddNote> {
             onPressed: () {
               String title = _titleController.text;
               String note = _notesController.text;
-              Navigator.pop(context, new Note(title, note));
+              Navigator.pop(
+                  context,
+                  new Note(
+                    notebookId: notebookId,
+                    title: title,
+                    note: note,
+                    dateCreated: DateTime.now(),
+                  ));
             },
             iconData: Icons.save,
           ),
@@ -78,7 +86,6 @@ class _AddNoteState extends State<AddNote> {
           ),
         ],
       ),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }

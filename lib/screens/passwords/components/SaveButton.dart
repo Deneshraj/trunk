@@ -16,7 +16,7 @@ class SaveButton extends StatelessWidget {
       onTap: onPress,
       child: Container(
         margin: EdgeInsets.all(10),
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(100),

@@ -32,7 +32,7 @@ class _EditNoteState extends State<EditNote> {
     TextEditingController _titleController = new TextEditingController();
     TextEditingController _notesController = new TextEditingController();
     _titleController.text = widget.note.title;
-    _notesController.text = widget.note.content;
+    _notesController.text = widget.note.note;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,9 +95,12 @@ class _EditNoteState extends State<EditNote> {
               } else {
                 Navigator.pop(
                   context,
-                  new Note(
-                    _titleController.text,
-                    _notesController.text,
+                  new Note.withId(
+                    id: widget.note.id,
+                    title: _titleController.text,
+                    notebookId: widget.note.notebookId,
+                    note: _notesController.text,
+                    dateCreated: DateTime.now(),
                   ),
                 );
               }

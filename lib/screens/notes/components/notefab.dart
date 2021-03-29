@@ -15,6 +15,7 @@ class NoteFab extends StatelessWidget {
       isExtended: true,
       heroTag: tag,
       onPressed: onPressed,
+      // TODO:create a extension capitalize.
       label: Text("${tag[0].toUpperCase()}${tag.substring(1)}"),
       icon: Icon(iconData),
       backgroundColor: color,

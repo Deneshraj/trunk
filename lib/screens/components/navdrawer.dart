@@ -7,6 +7,21 @@ class NavDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> shareNoteList = [
+      {
+        'title': "Share securely using steganography",
+        'onTap': () {
+          print("Sharing using steganography");
+        },
+      },
+      {
+        'title': "Share securely using password",
+        'onTap': () {
+          print("Sharing using password");
+        },
+      },
+    ];
+
     return Drawer(
       child: ListView(
         children: [
@@ -20,33 +35,28 @@ class NavDrawer extends StatelessWidget {
             textAlign: TextAlign.center,
           )),
           ListTile(
-            title: Text("Home"),
-            onTap: () {
-              print("home");
-            },
-          ),
-          ListTile(
-            title: Text("About"),
-            onTap: () {
-              print("about");
-            },
-          ),
-          ListTile(
             title: Text("Import/Export DB"),
             onTap: () {
-              print("about");
+              print("Import/Export DB");
             },
           ),
           ListTile(
             title: Text("Share key"),
             onTap: () {
-              print("about");
+              Navigator.pushNamed(context, '/sharekey');
             },
+          ),
+          ExpansionTile(
+            title: Text("Share Note"),
+            children: shareNoteList
+                .map((listItem) =>
+                    getSubLists(listItem['title'], listItem['onTap']))
+                .toList(),
           ),
           ListTile(
             title: Text("Friends List"),
             onTap: () {
-              print("friends list");
+              Navigator.pushNamed(context, '/friendslist');
             },
           ),
           ListTile(
@@ -57,6 +67,17 @@ class NavDrawer extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  ListTile getSubLists(String title, Function onTap) {
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 13),
+        textAlign: TextAlign.center,
+      ),
+      onTap: onTap,
     );
   }
 }
