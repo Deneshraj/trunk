@@ -1,9 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:trunk/db.dart';
+import 'package:share/share.dart';
+import 'package:trunk/db/db.dart';
+import 'package:trunk/model/encrypted_file_params.dart';
+import 'package:trunk/model/notebook.dart';
+import 'package:trunk/screens/components/modals.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
+import 'package:trunk/utils/rsa_encrypt.dart';
+import 'package:trunk/utils/store_file.dart';
 
 import '../../constants.dart';
 
@@ -13,6 +21,7 @@ class Notes extends StatefulWidget {
 }
 
 class _NotesState extends State<Notes> {
+  // TODO:Add Modal to view notes
   static final AppBar _defaultBar = AppBar(
     title: Text("Notes"),
   );
@@ -27,8 +36,8 @@ class _NotesState extends State<Notes> {
     });
   }
 
-  void updateNotes(DatabaseHelper databaseHelper, int notebookId) {
-    Future<List<Note>> notesListFuture = databaseHelper.getNotesList(notebookId);
+  void updateNotes(DatabaseHelper databaseHelper, Notebooks notebook) {
+    Future<List<Note>> notesListFuture = databaseHelper.getNotesList(notebook);
     notesListFuture.then((notesList) {
       setState(() {
         notes = notesList;
@@ -37,49 +46,96 @@ class _NotesState extends State<Notes> {
     }).catchError((error) => print(error));
   }
 
-  void addNote(DatabaseHelper databaseHelper, Note note) async {
-    int result = await databaseHelper.insertNote(note);
+  void addNote(
+      DatabaseHelper databaseHelper, Note note, Notebooks notebook) async {
+    int result = await databaseHelper.insertNote(note, notebook);
 
     if (result != 0) {
       showSnackbar(context, "Noted Created Successfully!");
-      updateNotes(databaseHelper, note.notebookId);
+      updateNotes(databaseHelper, notebook);
     } else {
       showSnackbar(context, "Failed to create Note!");
     }
   }
 
-  void editNote(DatabaseHelper databaseHelper, Note note, int index) async {
-    int result = await databaseHelper.updateNote(note);
+  void editNote(DatabaseHelper databaseHelper, Note note, Notebooks nb) async {
+    int result = await databaseHelper.updateNote(note, nb);
 
     if (result != 0) {
       showSnackbar(context, "Noted Updated Successfully!");
-      updateNotes(databaseHelper, note.notebookId);
+      updateNotes(databaseHelper, nb);
     } else {
       showSnackbar(context, "Failed to update Note!");
     }
   }
 
-  void optionsAction(DatabaseHelper databaseHelper, String option) {
+  void optionsAction(
+    BuildContext context,
+    DatabaseHelper databaseHelper,
+    String option,
+    Notebooks nb,
+  ) async {
     if (option == DELETE) {
       Note note = notes[_selected];
-      databaseHelper.deleteNote(note);
+      databaseHelper.deleteNote(note, nb);
       setState(() {
         notes.removeAt(_selected);
         _appBar = _defaultBar;
       });
     } else if (option == SHARE_WITH_FRIEND) {
-      print("Sharing With Friend");
+      Note note = notes[_selected];
+
+      String jsonString = jsonEncode(note.toMap());
+      EncryptedFileParams params =
+          await storeEncryptedTemporaryFile("${note.title}.nt", jsonString);
+      Map<String, dynamic> publicKey =
+          await _getKeyToEncryptModal(context, databaseHelper);
+
+      if (publicKey != null) {
+        String encryptedKey =
+            await rsaEncrypt(publicKey['public_key'], params.key.bytes);
+        Map<String, String> map = {
+          'title': publicKey['title'],
+          'encryptedText': encryptedKey,
+        };
+        print("${params.key} $encryptedKey");
+        String encryptedKeyPath =
+            await storeTemporaryFile("key.enc", jsonEncode(map));
+
+        if (params.path != null) {
+          await Share.shareFiles([
+            params.path,
+            encryptedKeyPath,
+          ]);
+          setState(() {
+            _appBar = _defaultBar;
+          });
+        } else {
+          print("Path is null");
+          showSnackbar(context, "Unable to share");
+        }
+      } else {
+        showSnackbar(context, "Please select a key to Encrypt");
+      }
     }
+  }
+
+  Future<Map<String, dynamic>> _getKeyToEncryptModal(
+      BuildContext context, DatabaseHelper databaseHelper) {
+    return getKeyToEncryptModal(context, databaseHelper);
   }
 
   @override
   Widget build(BuildContext context) {
-    final int _notebookId = ModalRoute.of(context).settings.arguments;
-    print("$_notebookId");
+    final Notebooks _notebook = ModalRoute.of(context).settings.arguments;
     final databaseHelper = Provider.of<DatabaseHelper>(context);
+    
+    if(_notebook.fileName == null) {
+      Navigator.of(context).pop();
+    }
 
-    if (!_initialized) {
-      updateNotes(databaseHelper, _notebookId);
+    if (!_initialized && _notebook.fileName != null) {
+      updateNotes(databaseHelper, _notebook);
     }
 
     AppBar _selectBar = AppBar(
@@ -93,7 +149,7 @@ class _NotesState extends State<Notes> {
       actions: <Widget>[
         PopupMenuButton<String>(
           onSelected: (string) {
-            optionsAction(databaseHelper, string);
+            optionsAction(context, databaseHelper, string, _notebook);
           },
           itemBuilder: (BuildContext context) {
             return options.map((option) {
@@ -131,7 +187,7 @@ class _NotesState extends State<Notes> {
               );
 
               if (result != null) {
-                editNote(databaseHelper, result, index);
+                editNote(databaseHelper, result, _notebook);
               }
             },
           ),
@@ -139,11 +195,11 @@ class _NotesState extends State<Notes> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          Navigator.pushNamed(context, '/addnote', arguments: _notebookId).then((result) {
+          Navigator.pushNamed(context, '/addnote').then((result) {
             if (result != null) {
               Note resultNote = result;
               // TODO:validate result for null values
-              addNote(databaseHelper, result);
+              addNote(databaseHelper, result, _notebook);
             }
           });
         },
@@ -152,5 +208,6 @@ class _NotesState extends State<Notes> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+
   }
 }

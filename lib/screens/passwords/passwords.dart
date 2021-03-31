@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trunk/constants.dart';
-import 'package:trunk/db.dart';
+import 'package:trunk/db/db.dart';
 import 'package:trunk/model/password.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/snackbar.dart';

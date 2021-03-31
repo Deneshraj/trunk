@@ -98,7 +98,6 @@ class _EditNoteState extends State<EditNote> {
                   new Note.withId(
                     id: widget.note.id,
                     title: _titleController.text,
-                    notebookId: widget.note.notebookId,
                     note: _notesController.text,
                     dateCreated: DateTime.now(),
                   ),

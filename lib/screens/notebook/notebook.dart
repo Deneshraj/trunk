@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:trunk/db.dart';
+import 'package:trunk/db/db.dart';
 import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
@@ -38,15 +37,12 @@ class _NotebookState extends State<Notebook> {
   }
 
   void updateNotebooks(DatabaseHelper databaseHelper) async {
-    final Future<Database> dbFuture = databaseHelper.initDb();
-    dbFuture.then((db) {
-      Future<List<Notebooks>> notebookListFuture =
-          databaseHelper.getNotebookList();
-      notebookListFuture.then((notebookList) {
-        setState(() {
-          notebooks = [passwordNb] + notebookList;
-          _initialized = true;
-        });
+    Future<List<Notebooks>> notebookListFuture =
+        databaseHelper.getNotebookList();
+    notebookListFuture.then((notebookList) {
+      setState(() {
+        notebooks = notebookList;
+        _initialized = true;
       });
     });
   }
@@ -55,7 +51,7 @@ class _NotebookState extends State<Notebook> {
     if (notebooks.contains(notebook)) {
       showSnackbar(context, "Notebook already created");
     } else {
-      int result = await databaseHelper.insertNoteBook(notebook);
+      int result = await databaseHelper.insertNotebook(notebook);
       if (result != 0) {
         updateNotebooks(databaseHelper);
       } else {
@@ -154,13 +150,14 @@ class _NotebookState extends State<Notebook> {
 
   @override
   Widget build(BuildContext context) {
-    final databaseHelper = Provider.of<DatabaseHelper>(context); 
+    final databaseHelper = Provider.of<DatabaseHelper>(context);
 
     if (!_initialized) {
       updateNotebooks(databaseHelper);
     }
 
     AppBar _selectBar = AppBar(
+      // TODO:Write a function that returns this appbar
       title: Text(""),
       leading: GestureDetector(
         onTap: () {
@@ -188,38 +185,63 @@ class _NotebookState extends State<Notebook> {
     return Scaffold(
       appBar: _appBar,
       drawer: NavDrawer(),
-      body: Column(
-        children: <Widget>[
-          SizedBox(
-            width: double.infinity,
-          ),
-          Expanded(
-            child: GridView.builder(
-              itemCount: notebooks.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-              ),
-              itemBuilder: (context, index) => (notebooks[index].name == PASSWORD)
-                  ? NBCard(
-                      text: notebooks[index].name,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/passwords');
-                      },
-                    )
-                  : NBCard(
-                      text: notebooks[index].name,
-                      onTap: () {
-                        print("${notebooks[index].id}");
-                        Navigator.pushNamed(context, '/notes', arguments: notebooks[index].id);
-                      },
-                      onLongPress: () {
-                        setState(() {
-                          _appBar = _selectBar;
-                          _selected = index;
-                        });
-                      },
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverToBoxAdapter(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/passwords');
+              },
+              onLongPress: () {},
+              child: Container(
+                height: 200,
+                margin: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      //TODO: Add the dark mode
+                      color: Colors.grey[300],
+                      blurRadius: 30.0,
                     ),
+                  ],
+                  color: Colors.white,
+                  border: Border(
+                    left: BorderSide(color: Colors.deepPurple, width: 5.0),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    PASSWORD,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10.0,
+              crossAxisSpacing: 10.0,
+              childAspectRatio: 1.0,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => NBCard(
+                text: notebooks[index].name,
+                onTap: () {
+                  Navigator.pushNamed(context, '/notes',
+                      arguments: notebooks[index]);
+                },
+                onLongPress: () {
+                  setState(() {
+                    _appBar = _selectBar;
+                    _selected = index;
+                  });
+                },
+              ),
+              childCount: notebooks.length,
             ),
           ),
         ],
@@ -229,7 +251,8 @@ class _NotebookState extends State<Notebook> {
           try {
             getNotebook(context).then((value) {
               if (value != null) {
-                saveNotebook(databaseHelper, Notebooks(name: value, createdAt: DateTime.now()));
+                saveNotebook(databaseHelper,
+                    Notebooks(name: value, createdAt: DateTime.now()));
               }
             });
           } catch (e) {
@@ -244,59 +267,3 @@ class _NotebookState extends State<Notebook> {
     );
   }
 }
-
-// class MyApp extends StatelessWidget {
-//   // This widget is the root of your application.
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       debugShowCheckedModeBanner: false,
-//       theme: ThemeData(
-//         primarySwatch: Colors.green,
-//       ),
-//       home: MyHomePage(title: 'Flutter Demo Home Page'),
-//     );
-//   }
-// }
-
-// class MyHomePage extends StatefulWidget {
-//   MyHomePage({Key key, this.title}) : super(key: key);
-//   final String title;
-
-//   @override
-//   _MyHomePageState createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   int _counter = 0;
-
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(widget.title),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             Text(
-//               'You have pushed the button this many times:',
-//             ),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headline4,
-//             ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         tooltip: 'Increment',
-//         child: Icon(Icons.add),
-//       ),
-//     );
-//   }
-// }

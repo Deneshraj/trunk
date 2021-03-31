@@ -4,34 +4,47 @@ import 'package:pointycastle/export.dart';
 class Friend {
   int id;
   String name;
+  String title;
   RSAPublicKey key;
   DateTime createdAt;
 
-  Friend({ this.name, this.key, this.createdAt });
-  Friend.withId({ this.id, this.name, this.key, this.createdAt });
+  Friend({ this.name, this.key, this.title, this.createdAt });
+  Friend.withId({ this.id, this.name, this.title, this.key, this.createdAt });
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = new Map<String, dynamic>();
-    map['id'] = "$id";
+    if(id != null) {
+      map['id'] = "$id";
+    }
+
     map['name'] = "$name";
+    map['title'] = "$title";
     map['key'] = publicKeyToString();
-    map['created_at'] = createdAt.toString();
+    
+    if(createdAt != null) {
+      map['date_created'] = createdAt.toString();
+    } else {
+      map['date_created'] = DateTime.now().toString();
+    }
 
     return map;
   }
 
-  Friend.fromMap(Map<String, dynamic> map) {
-    this.id = map['id'];
+  Friend.fromMapObject(Map<String, dynamic> map) {
+    if(map['id'] != null) {
+      this.id = map['id'];
+    }
     this.name = map['name'];
+    this.title = map['title'];
     this.key = strToPublicKey(map['key']);
-    this.createdAt = map['created_at'];
+    this.createdAt = DateTime.parse(map['date_created']);
   }
 
   String publicKeyToString() {
     return "" + key.modulus.toString() + "," + key.exponent.toString();
   }
 
-  RSAPublicKey strToPublicKey(String key) {
+  static RSAPublicKey strToPublicKey(String key) {
     List<String> splitKey = key.split(",");
     BigInt modulus = BigInt.parse(splitKey[0]);
     BigInt exponent = BigInt.parse(splitKey[1]);

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:trunk/constants.dart';
-import 'package:trunk/db.dart';
+import 'package:trunk/db/db.dart';
+import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
 import 'package:trunk/screens/friends_list/friends_list.dart';
 import 'package:trunk/screens/key/userkey.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
@@ -10,10 +13,14 @@ import 'package:trunk/screens/notes/components/addnote.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
 import 'package:trunk/screens/notes/notes.dart';
 import 'package:trunk/screens/passwords/passwords.dart';
+import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
+import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
+
 void main() async {
   /* Todo Section
   TODO:move note from one notebook to another
   TODO:BUG: same notes showing on all notebook
+  TODO:Define Architecture and Working
   */
   runApp(Trunk());
 }
@@ -24,17 +31,37 @@ class Trunk extends StatefulWidget {
 }
 
 DatabaseHelper createDatabaseHelperInstance(String password) {
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  databaseHelper.setKey(password);
+  try {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+    databaseHelper.createDbFile();
+    databaseHelper.setKey(password);
+    // databaseHelper.updateDb();
 
-  return databaseHelper;
+    return databaseHelper;
+  } on DatabaseException catch (e, s) {
+    print("\n\n\n Database Exception $e");
+  } catch (e, s) {
+    print("Exception $e");
+    print("Exception $s");
+  }
+
+  return null;
 }
 
 class _TrunkState extends State<Trunk> {
   final DatabaseHelper databaseHelper = createDatabaseHelperInstance("test");
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    if (databaseHelper == null) {
+      Fluttertoast.showToast(
+        msg: "Invalid Password Entered! Exiting",
+        toastLength: Toast.LENGTH_SHORT,
+        timeInSecForIosWeb: 1,
+      );
+    }
+
     return MaterialApp(
       title: 'Trunk',
       debugShowCheckedModeBanner: false,
@@ -103,6 +130,21 @@ class _TrunkState extends State<Trunk> {
             ChangeNotifierProvider<DatabaseHelper>.value(
               value: databaseHelper,
               child: FriendsList(),
+            ),
+        ShareNoteWithPassword.routeName: (context) =>
+            ChangeNotifierProvider<DatabaseHelper>.value(
+              value: databaseHelper,
+              child: ShareNoteWithPassword(),
+            ),
+        ShareNoteWithSteg.routeName: (context) =>
+            ChangeNotifierProvider<DatabaseHelper>.value(
+              value: databaseHelper,
+              child: ShareNoteWithSteg(),
+            ),
+        DecryptNote.routeName: (context) =>
+            ChangeNotifierProvider<DatabaseHelper>.value(
+              value: databaseHelper,
+              child: DecryptNote(),
             ),
       },
     );

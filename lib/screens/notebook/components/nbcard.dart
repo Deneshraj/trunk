@@ -8,7 +8,8 @@ class NBCard extends StatelessWidget {
   const NBCard({
     Key key,
     this.text,
-    this.onTap, this.onLongPress,
+    this.onTap,
+    this.onLongPress,
   }) : super(key: key);
 
   @override
@@ -22,12 +23,16 @@ class NBCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               //TODO: Add the dark mode
-              color: Colors.grey[400],
-              blurRadius: 10.0,
+              color: Colors.grey[300],
+              blurRadius: 30.0,
             ),
           ],
           color: Colors.white,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Colors.grey[300],
+            width: 1.0,
+          ),
         ),
         child: Center(
           child: Text(

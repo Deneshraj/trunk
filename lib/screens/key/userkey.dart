@@ -10,10 +10,13 @@ import 'package:trunk/model/keys.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/utils/store_file.dart';
+import 'package:share/share.dart';
 
 import '../../constants.dart';
-import '../../db.dart';
+import '../../db/db.dart';
 
+// TODO:Add a Loading Screen while generating keys
 class UserKey extends StatefulWidget {
   @override
   UserKeyState createState() => UserKeyState();
@@ -90,19 +93,29 @@ class UserKeyState extends State<UserKey> {
   }
 
   // void optionsAction(DatabaseHelper databaseHelper, String option) {
-  void optionsAction(String option, DatabaseHelper databaseHelper) {
+  void optionsAction(String option, DatabaseHelper databaseHelper) async {
     if (option == DELETE) {
       Keys key = keys[_selected];
       deleteKey(databaseHelper, key);
     } else if (option == SHARE_WITH_FRIEND) {
       Map<String, dynamic> keyMap = {
         'key': keys[_selected].publicKeyToString(),
+        'title': keys[_selected].title,
       };
       
       String keysJson = jsonEncode(keyMap);
-      
-      print("$keysJson");
+      String filePath = await storeFileLocally("key.aes", "keys", keysJson);
+      if(filePath != null) {
+        await Share.shareFiles([filePath], text: "Key");
+        // deleteFile(filePath);
+      } else {
+        showSnackbar(context, "An Error occured while sharing");
+      }
     }
+
+    setState(() {
+      _appBar = _defaultBar;
+    });
   }
 
   void changeAppbarToDefault() {
@@ -179,7 +192,6 @@ class UserKeyState extends State<UserKey> {
 
     return Scaffold(
       appBar: _appBar,
-      drawer: NavDrawer(),
       body: ListView.builder(
           itemCount: keys.length,
           itemBuilder: (context, index) {

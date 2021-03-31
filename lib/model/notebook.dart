@@ -2,6 +2,7 @@ class Notebooks {
   // TODO: Add required and not null constraints
   int id;
   String name;
+  String fileName;
   DateTime createdAt;
 
   Notebooks({ this.name, this.createdAt });
@@ -12,6 +13,11 @@ class Notebooks {
     if(id != null) {
       map['id'] = id;
     }
+
+    if(fileName != null) {
+      map['file_name'] = fileName;
+    }
+
     map['name'] = name;
     map['created_at'] = createdAt.toString();
 
@@ -21,6 +27,7 @@ class Notebooks {
   Notebooks.fromMapObject(Map<String, dynamic> map) {
     this.id = map['id'];
     this.name = map['name'];
+    this.fileName = map['file_name'];
     this.createdAt = DateTime.parse(map['created_at']);
   }
 

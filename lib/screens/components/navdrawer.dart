@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
+import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
+import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
 
 class NavDrawer extends StatelessWidget {
   const NavDrawer({
@@ -11,13 +14,13 @@ class NavDrawer extends StatelessWidget {
       {
         'title': "Share securely using steganography",
         'onTap': () {
-          print("Sharing using steganography");
+          Navigator.popAndPushNamed(context, ShareNoteWithSteg.routeName);
         },
       },
       {
         'title': "Share securely using password",
         'onTap': () {
-          print("Sharing using password");
+          Navigator.popAndPushNamed(context, ShareNoteWithPassword.routeName);
         },
       },
     ];
@@ -43,7 +46,7 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             title: Text("Share key"),
             onTap: () {
-              Navigator.pushNamed(context, '/sharekey');
+              Navigator.popAndPushNamed(context, '/sharekey');
             },
           ),
           ExpansionTile(
@@ -54,9 +57,15 @@ class NavDrawer extends StatelessWidget {
                 .toList(),
           ),
           ListTile(
+            title: Text("Decrypt Note"),
+            onTap: () {
+              Navigator.popAndPushNamed(context, DecryptNote.routeName);
+            },
+          ),
+          ListTile(
             title: Text("Friends List"),
             onTap: () {
-              Navigator.pushNamed(context, '/friendslist');
+              Navigator.popAndPushNamed(context, '/friendslist');
             },
           ),
           ListTile(
