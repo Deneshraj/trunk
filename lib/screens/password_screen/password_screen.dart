@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
 
 Future<DatabaseHelper> createDatabaseHelperInstance(String password) async {
@@ -38,6 +39,37 @@ class PasswordScreen extends StatefulWidget {
 
 class _PasswordScreenState extends State<PasswordScreen> {
   TextEditingController _passwordController = new TextEditingController();
+
+  Future<void> _handleSubmit(
+    DatabaseHelperInit databaseHelperInit,
+    String password,
+  ) async {
+    if (password.isNotEmpty) {
+      DatabaseHelper databaseHelper =
+          await createDatabaseHelperInstance(password);
+      if (databaseHelperInit != null) {
+        if (databaseHelper != null) {
+          databaseHelperInit.setDatabaseHelper(databaseHelper);
+          showSnackbar(context, "Welcome to Trunk");
+          Navigator.pushReplacementNamed(
+            context,
+            Notebook.routeName,
+          );
+        } else {
+          // TODO: To close app automatically on 3 attempts
+          // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
+          showSnackbar(context, "Invalid Password");
+        }
+      } else {
+        showSnackbar(context, "Something went wrong!");
+        // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
+      }
+    } else {
+      showSnackbar(context, "Please Enter Master password");
+      // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final databaseHelperInit = Provider.of<DatabaseHelperInit>(context);
@@ -50,10 +82,15 @@ class _PasswordScreenState extends State<PasswordScreen> {
             TextField(
                 // TODO:Extract this widget and create separate widtet
                 autofocus: true,
-                textInputAction: TextInputAction.next,
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value) async {
+                  await _handleSubmit(databaseHelperInit, value);
+                },
                 decoration: InputDecoration(
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 20,
+                  ),
                   isDense: true,
                   hintText: "Enter the Master password",
                   border: OutlineInputBorder(
@@ -67,43 +104,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
               text: "Decrypt Notebook",
               onPressed: () async {
                 String password = _passwordController.text.trim();
-
-                if (password.isNotEmpty) {
-                  DatabaseHelper databaseHelper =
-                      await createDatabaseHelperInstance(password);
-                  if (databaseHelperInit != null) {
-                    if (databaseHelper != null) {
-                      databaseHelperInit.setDatabaseHelper(databaseHelper);
-                      Navigator.pushReplacementNamed(
-                          context, Notebook.routeName);
-                    } else {
-                      // TODO: To close app automatically on 3 attempts
-                      Fluttertoast.showToast(
-                        msg: "Incorrect Password!",
-                        toastLength: Toast.LENGTH_SHORT,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                      );
-                      // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
-                    }
-                  } else {
-                    Fluttertoast.showToast(
-                      msg: "Something went wrong!",
-                      toastLength: Toast.LENGTH_SHORT,
-                      backgroundColor: Colors.black,
-                      textColor: Colors.white,
-                    );
-                    // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
-                  }
-                } else {
-                  Fluttertoast.showToast(
-                    msg: "Please Enter a valid Password",
-                    toastLength: Toast.LENGTH_SHORT,
-                    backgroundColor: Colors.black,
-                    textColor: Colors.white,
-                  );
-                  // SystemChannels.platform.invokeMethod("SystemNavigator.pop");
-                }
+                await _handleSubmit(databaseHelperInit, password);
               },
             ),
           ],

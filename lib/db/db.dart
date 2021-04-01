@@ -97,6 +97,11 @@ class DatabaseHelper extends ChangeNotifier {
     
     File file = File(hashFile);
     String passToCheck = await file.readAsString();
+    if(passToCheck == "") {
+      file.writeAsString(hashedPassword);
+      return true;
+    }
+    
     return (passToCheck == hashedPassword);
   }
 

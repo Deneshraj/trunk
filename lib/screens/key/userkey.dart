@@ -17,6 +17,7 @@ import '../../constants.dart';
 import '../../db/db.dart';
 
 // TODO:Add a Loading Screen while generating keys
+// TODO:Change the extension of the key shared.
 class UserKey extends StatefulWidget {
   @override
   UserKeyState createState() => UserKeyState();

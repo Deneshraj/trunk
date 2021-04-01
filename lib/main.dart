@@ -52,6 +52,7 @@ class _TrunkState extends State<Trunk> {
   DatabaseHelperInit databaseHelperInit = DatabaseHelperInit();
 
   // This widget is the root of your application.
+  // TODO:Implement the Steganography
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

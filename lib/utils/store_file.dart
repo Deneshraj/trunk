@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
 import 'package:path/path.dart';
-import 'package:pointycastle/pointycastle.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:trunk/model/encrypted_file_params.dart';
-import 'package:trunk/utils/file_encrypt.dart';
-import 'package:trunk/utils/rsa_encrypt.dart';
 import 'package:trunk/utils/text_encrypt.dart';
 
 Future<String> storeFileLocally(String fileName, String dirName, String contents) async {

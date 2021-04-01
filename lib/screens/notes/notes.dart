@@ -84,7 +84,7 @@ class _NotesState extends State<Notes> {
       });
     } else if (option == SHARE_WITH_FRIEND) {
       Note note = notes[_selected];
-
+      // TODO:Make only one file to share
       String jsonString = jsonEncode(note.toMap());
       EncryptedFileParams params =
           await storeEncryptedTemporaryFile("${note.title}.nt", jsonString);

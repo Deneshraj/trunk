@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
 import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
@@ -71,7 +72,7 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             title: Text("Exit"),
             onTap: () {
-              print("exit");
+              SystemNavigator.pop();
             },
           ),
         ],
