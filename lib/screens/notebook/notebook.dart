@@ -9,6 +9,7 @@ import '../../constants.dart';
 import 'components/nbcard.dart';
 
 class Notebook extends StatefulWidget {
+  static const routeName = "Notebook";
   // TODO:Add Route Name to all screens
   // Eg., static const routeName = '/notebook';
   @override

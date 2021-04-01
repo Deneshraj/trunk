@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:trunk/constants.dart';
 import 'package:trunk/db/db.dart';
+import 'package:trunk/db/db_init.dart';
 import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
 import 'package:trunk/screens/friends_list/friends_list.dart';
 import 'package:trunk/screens/key/userkey.dart';
@@ -16,6 +16,8 @@ import 'package:trunk/screens/passwords/passwords.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
 import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
 
+import 'screens/password_screen/password_screen.dart';
+
 void main() async {
   /* Todo Section
   TODO:move note from one notebook to another
@@ -23,11 +25,6 @@ void main() async {
   TODO:Define Architecture and Working
   */
   runApp(Trunk());
-}
-
-class Trunk extends StatefulWidget {
-  @override
-  _TrunkState createState() => _TrunkState();
 }
 
 DatabaseHelper createDatabaseHelperInstance(String password) {
@@ -38,8 +35,6 @@ DatabaseHelper createDatabaseHelperInstance(String password) {
     // databaseHelper.updateDb();
 
     return databaseHelper;
-  } on DatabaseException catch (e, s) {
-    print("\n\n\n Database Exception $e");
   } catch (e, s) {
     print("Exception $e");
     print("Exception $s");
@@ -48,20 +43,17 @@ DatabaseHelper createDatabaseHelperInstance(String password) {
   return null;
 }
 
+class Trunk extends StatefulWidget {
+  @override
+  _TrunkState createState() => _TrunkState();
+}
+
 class _TrunkState extends State<Trunk> {
-  final DatabaseHelper databaseHelper = createDatabaseHelperInstance("test");
+  DatabaseHelperInit databaseHelperInit = DatabaseHelperInit();
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    if (databaseHelper == null) {
-      Fluttertoast.showToast(
-        msg: "Invalid Password Entered! Exiting",
-        toastLength: Toast.LENGTH_SHORT,
-        timeInSecForIosWeb: 1,
-      );
-    }
-
     return MaterialApp(
       title: 'Trunk',
       debugShowCheckedModeBanner: false,
@@ -100,50 +92,56 @@ class _TrunkState extends State<Trunk> {
       ),
       themeMode: ThemeMode.light,
       // TODO:change named routes to the class's attribute's name
-      initialRoute: '/',
+      initialRoute: PasswordScreen.routeName,
       routes: {
-        '/': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+        PasswordScreen.routeName: (context) =>
+            ChangeNotifierProvider<DatabaseHelperInit>.value(
+              value: databaseHelperInit,
+              child: PasswordScreen(),
+            ),
+        Notebook.routeName: (context) =>
+            ChangeNotifierProvider<DatabaseHelper>.value(
+              value: databaseHelperInit.databaseHelper,
               child: Notebook(),
             ),
         '/notes': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: Notes(),
             ),
         '/addnote': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: AddNote(),
             ),
         '/editnote': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: EditNote(),
             ),
         '/passwords': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: Passwords(),
             ),
         '/sharekey': (context) => ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: UserKey(),
             ),
         '/friendslist': (context) =>
             ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: FriendsList(),
             ),
         ShareNoteWithPassword.routeName: (context) =>
             ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: ShareNoteWithPassword(),
             ),
         ShareNoteWithSteg.routeName: (context) =>
             ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: ShareNoteWithSteg(),
             ),
         DecryptNote.routeName: (context) =>
             ChangeNotifierProvider<DatabaseHelper>.value(
-              value: databaseHelper,
+              value: databaseHelperInit.databaseHelper,
               child: DecryptNote(),
             ),
       },

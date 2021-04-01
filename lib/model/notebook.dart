@@ -16,7 +16,7 @@ class Notebooks {
 
     if(fileName != null) {
       map['file_name'] = fileName;
-    }
+    } else throw Exception("File name should not be null");
 
     map['name'] = name;
     map['created_at'] = createdAt.toString();
