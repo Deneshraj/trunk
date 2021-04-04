@@ -10,6 +10,7 @@ import 'package:trunk/model/keys.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/utils/exit_alert.dart';
 import 'package:trunk/utils/store_file.dart';
 import 'package:share/share.dart';
 
@@ -28,6 +29,7 @@ class UserKeyState extends State<UserKey> {
   List<Keys> keys = [];
   int _selected;
   bool _initialized = false;
+  bool _loading = false;
   static final AppBar _defaultBar = AppBar(
     title: Text("Share Key"),
   );
@@ -196,58 +198,74 @@ class UserKeyState extends State<UserKey> {
       backgroundColor: Colors.deepPurple,
     );
 
-    return Scaffold(
-      appBar: _appBar,
-      drawer: NavDrawer(),
-      body: ListView.builder(
-          itemCount: keys.length,
-          itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-                title: Text(
-                  "${keys[index].title}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                onTap: () async {
-                  Map<String, dynamic> keyMap = {
-                    'key': keys[index].publicKeyToString(),
-                    'title': keys[index].title,
-                  };
+    return WillPopScope(
+      onWillPop: () => exitAlert(context),
+      child: Scaffold(
+        appBar: _appBar,
+        drawer: NavDrawer(),
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                  itemCount: keys.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(
+                          "${keys[index].title}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        onTap: () async {
+                          Map<String, dynamic> keyMap = {
+                            'key': keys[index].publicKeyToString(),
+                            'title': keys[index].title,
+                          };
 
-                  await _shareKey(keyMap);
-                },
-                onLongPress: () {
-                  setState(() {
-                    _appBar = _selectBar;
-                    _selected = index;
-                  });
-                },
-              ),
-            );
-          }),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final title = await getKeyTitle(context);
+                          await _shareKey(keyMap);
+                        },
+                        onLongPress: () {
+                          setState(() {
+                            _appBar = _selectBar;
+                            _selected = index;
+                          });
+                        },
+                      ),
+                    );
+                  }),
+            ),
+            (_loading) ? CircularProgressIndicator() : Container(),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            setState(() {
+              _loading = true;
+            });
+            final title = await getKeyTitle(context);
 
-          if (title != null) {
-            try {
-              final value =
-                  generateRsaKeyPair(generateSecureRandom(), title: title);
+            if (title != null) {
+              try {
+                final value =
+                    generateRsaKeyPair(generateSecureRandom(), title: title);
 
-              if (value != null) {
-                addKey(databaseHelper, value);
+                if (value != null) {
+                  addKey(databaseHelper, value);
+                }
+              } catch (e) {
+                print("$e");
               }
-            } catch (e) {
-              print("$e");
             }
-          }
-        },
-        label: Text("Generate new key"),
+            setState(() {
+              _loading = false;
+            });
+          },
+          label: Text("Generate new key"),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

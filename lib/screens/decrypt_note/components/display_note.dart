@@ -14,7 +14,9 @@ class DisplayNote extends StatelessWidget {
         DisplayNoteRow(title: "Title", value: note.title),
         DisplayNoteRow(title: "Note", value: note.note),
         DisplayNoteRow(
-            title: "Date Created", value: note.dateCreated.toIso8601String()),
+          title: "Date Created",
+          value: "${note.dateCreated.day}-${note.dateCreated.month}-${note.dateCreated.year}",
+        ),
       ],
     );
   }

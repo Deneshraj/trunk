@@ -28,6 +28,8 @@ void main() async {
   TODO:Pad the password
   TODO:Are you sure you want to exit section on back button
   TODO:Add Spinner
+  TODO:Default qr code
+  TODO:Wrap the decrypted notes
   */
   runApp(Trunk());
 }

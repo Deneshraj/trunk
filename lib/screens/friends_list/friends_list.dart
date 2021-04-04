@@ -4,6 +4,7 @@ import 'package:trunk/db/db.dart';
 import 'package:trunk/model/friends.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/utils/exit_alert.dart';
 
 import '../../constants.dart';
 import 'components/modal_form.dart';
@@ -100,43 +101,46 @@ class _FriendsListState extends State<FriendsList> {
       ],
       backgroundColor: Colors.deepPurple,
     );
-    return Scaffold(
-      appBar: _appBar,
-      drawer: NavDrawer(),
-      body: ListView.builder(
-          itemCount: friendsList.length,
-          itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-                title: Text(
-                  "${friendsList[index].name}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+    return WillPopScope(
+      onWillPop: () => exitAlert(context),
+      child: Scaffold(
+        appBar: _appBar,
+        drawer: NavDrawer(),
+        body: ListView.builder(
+            itemCount: friendsList.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  title: Text(
+                    "${friendsList[index].name}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
+                  onLongPress: () {
+                    setState(() {
+                      _selected = index;
+                      _appBar = _selectBar;
+                    });
+                  },
                 ),
-                onLongPress: () {
-                  setState(() {
-                    _selected = index;
-                    _appBar = _selectBar;
-                  });
-                },
-              ),
-            );
-          }),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          var friend =
-              await _addFriendsModalBottomSheet(context, databaseHelper);
-          if (friend != null) {
-            addFriend(databaseHelper, friend);
-          } else {
-            showSnackbar(context, "Unable to add Friend");
-          }
-        },
-        label: Text("Add Friend"),
+              );
+            }),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            var friend =
+                await _addFriendsModalBottomSheet(context, databaseHelper);
+            if (friend != null) {
+              addFriend(databaseHelper, friend);
+            } else {
+              showSnackbar(context, "Unable to add Friend");
+            }
+          },
+          label: Text("Add Friend"),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

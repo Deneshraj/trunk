@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
@@ -9,6 +8,7 @@ import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
+import 'package:trunk/utils/exit_alert.dart';
 
 Future<DatabaseHelper> createDatabaseHelperInstance(String password) async {
   try {
@@ -74,51 +74,54 @@ class _PasswordScreenState extends State<PasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final databaseHelperInit = Provider.of<DatabaseHelperInit>(context);
-    return Scaffold(
-      appBar: AppBar(title: Text("Trunk")),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: ListView(
-          children: <Widget>[
-            TextField(
-                // TODO:Extract this widget and create separate widtet
-                autofocus: true,
-                textInputAction: TextInputAction.go,
-                onSubmitted: (value) async {
-                  await _handleSubmit(databaseHelperInit, value);
+    return WillPopScope(
+      onWillPop: () => exitAlert(context),
+      child: Scaffold(
+        appBar: AppBar(title: Text("Trunk")),
+        body: Container(
+          padding: EdgeInsets.all(20),
+          child: ListView(
+            children: <Widget>[
+              TextField(
+                  // TODO:Extract this widget and create separate widtet
+                  autofocus: true,
+                  textInputAction: TextInputAction.go,
+                  onSubmitted: (value) async {
+                    await _handleSubmit(databaseHelperInit, value);
+                  },
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 20,
+                    ),
+                    isDense: true,
+                    hintText: "Enter the Master password",
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(width: 1.0),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 18),
+                  controller: _passwordController),
+              InputFilesButton(
+                text: "Decrypt Notebook",
+                onPressed: () async {
+                  String password = _passwordController.text.trim();
+                  await _handleSubmit(databaseHelperInit, password);
                 },
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 20,
-                  ),
-                  isDense: true,
-                  hintText: "Enter the Master password",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1.0),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                style: TextStyle(fontSize: 18),
-                controller: _passwordController),
-            InputFilesButton(
-              text: "Decrypt Notebook",
-              onPressed: () async {
-                String password = _passwordController.text.trim();
-                await _handleSubmit(databaseHelperInit, password);
-              },
-            ),
-            Text(
-              "OR",
-              textAlign: TextAlign.center,
-            ),
-            InputFilesButton(
-              text: "Import DB",
-              onPressed: () {
-                Navigator.pushNamed(context, ImportDb.routeName);
-              },
-            ),
-          ],
+              ),
+              Text(
+                "OR",
+                textAlign: TextAlign.center,
+              ),
+              InputFilesButton(
+                text: "Import DB",
+                onPressed: () {
+                  Navigator.pushNamed(context, ImportDb.routeName);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

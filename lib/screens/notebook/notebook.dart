@@ -7,6 +7,7 @@ import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/notes/notes.dart';
 import 'package:trunk/screens/passwords/passwords.dart';
+import 'package:trunk/utils/exit_alert.dart';
 import '../../constants.dart';
 import 'components/nbcard.dart';
 
@@ -185,91 +186,96 @@ class _NotebookState extends State<Notebook> {
       ],
     );
 
-    return Scaffold(
-      appBar: _appBar,
-      drawer: NavDrawer(),
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, Passwords.routeName);
-              },
-              onLongPress: () {},
-              child: Container(
-                height: 200,
-                margin: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      //TODO: Add the dark mode
-                      color: Colors.grey[300],
-                      blurRadius: 30.0,
-                    ),
-                  ],
-                  color: Colors.white,
-                  border: Border(
-                    left: BorderSide(color: Colors.deepPurple, width: 5.0),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    PASSWORD,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10.0,
-              crossAxisSpacing: 10.0,
-              childAspectRatio: 1.0,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => NBCard(
-                text: notebooks[index].name,
+    return WillPopScope(
+      onWillPop: () async {
+        return exitAlert(context);
+      },
+      child: Scaffold(
+        appBar: _appBar,
+        drawer: NavDrawer(),
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverToBoxAdapter(
+              child: GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    Notes.routeName,
-                    arguments: notebooks[index],
-                  );
+                  Navigator.pushNamed(context, Passwords.routeName);
                 },
-                onLongPress: () {
-                  setState(() {
-                    _appBar = _selectBar;
-                    _selected = index;
-                  });
-                },
+                onLongPress: () {},
+                child: Container(
+                  height: 200,
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        //TODO: Add the dark mode
+                        color: Colors.grey[300],
+                        blurRadius: 30.0,
+                      ),
+                    ],
+                    color: Colors.white,
+                    border: Border(
+                      left: BorderSide(color: Colors.deepPurple, width: 5.0),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      PASSWORD,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              childCount: notebooks.length,
             ),
-          ),
-        ],
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 10.0,
+                crossAxisSpacing: 10.0,
+                childAspectRatio: 1.0,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => NBCard(
+                  text: notebooks[index].name,
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      Notes.routeName,
+                      arguments: notebooks[index],
+                    );
+                  },
+                  onLongPress: () {
+                    setState(() {
+                      _appBar = _selectBar;
+                      _selected = index;
+                    });
+                  },
+                ),
+                childCount: notebooks.length,
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            try {
+              getNotebook(context).then((value) {
+                if (value != null) {
+                  saveNotebook(databaseHelper,
+                      Notebooks(name: value, createdAt: DateTime.now()));
+                }
+              });
+            } catch (e) {
+              print(e);
+              showSnackbar(context, "Error creating new notebook!");
+            }
+          },
+          label: Text("New"),
+          icon: Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          try {
-            getNotebook(context).then((value) {
-              if (value != null) {
-                saveNotebook(databaseHelper,
-                    Notebooks(name: value, createdAt: DateTime.now()));
-              }
-            });
-          } catch (e) {
-            print(e);
-            showSnackbar(context, "Error creating new notebook!");
-          }
-        },
-        label: Text("New"),
-        icon: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

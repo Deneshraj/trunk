@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:trunk/constants.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/modals.dart';
@@ -14,6 +17,7 @@ import 'package:trunk/steganography/request/encode_request.dart';
 import 'package:trunk/steganography/response/encode_response.dart';
 import 'package:trunk/utils/encrypt_note.dart';
 import 'package:image/image.dart' as imglib;
+import 'package:trunk/utils/exit_alert.dart';
 import 'package:trunk/utils/store_file.dart';
 
 import '../../db/db.dart';
@@ -37,6 +41,8 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
 
   String imgFileName; // For Steg
   String imgFilePath; // For Steg
+  bool qrSteg = false;
+  bool _loading = false;
 
   Future<Note> _getNoteModal(DatabaseHelper databaseHelper) {
     return getNotebookModal(context, databaseHelper);
@@ -50,118 +56,154 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
   @override
   Widget build(BuildContext context) {
     DatabaseHelper databaseHelper = Provider.of<DatabaseHelper>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Sharing note with Password"),
-      ),
-      drawer: NavDrawer(),
-      body: Container(
-        child: Column(
-          children: <Widget>[
-            SizedBox(width: double.infinity),
-            InputFilesButton(
-              text: "Select note",
-              onPressed: () async {
-                Note note = await _getNoteModal(databaseHelper);
-                if (note != null) {
-                  setState(() {
-                    _note = note;
-                  });
-                } else {
-                  showSnackbar(context, "Please Select a Note");
-                }
-              },
-            ),
-            (_note != null) ? Text("${_note.title}") : Container(),
-            InputFilesButton(
-              text: "Select Friend",
-              onPressed: () async {
-                Map<String, dynamic> friend =
-                    await _getKeyToEncryptModal(context, databaseHelper);
+    return WillPopScope(
+      onWillPop: () => exitAlert(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Sharing note with Password"),
+        ),
+        drawer: NavDrawer(),
+        body: Container(
+          child: ListView(
+            children: <Widget>[
+              SizedBox(width: double.infinity),
+              InputFilesButton(
+                text: "Select note",
+                onPressed: () async {
+                  Note note = await _getNoteModal(databaseHelper);
+                  if (note != null) {
+                    setState(() {
+                      _note = note;
+                    });
+                  } else {
+                    showSnackbar(context, "Please Select a Note");
+                  }
+                },
+              ),
+              (_note != null) ? Text("${_note.title}") : Container(),
+              InputFilesButton(
+                text: "Select Friend",
+                onPressed: () async {
+                  Map<String, dynamic> friend =
+                      await _getKeyToEncryptModal(context, databaseHelper);
 
-                if (friend != null) {
-                  setState(() {
-                    _key = friend;
-                  });
-                } else {
-                  showSnackbar(
-                      context, "Please Select a Friend's list to send note");
-                }
-              },
-            ),
-            (_key != null) ? Text("${_key['name']}") : Container(),
-            (widget.steg)
-                ? InputFilesButton(
-                    text: "Select Image to Encrypt",
-                    onPressed: () async {
-                      try {
-                        FilePickerResult result = await FilePicker.platform
-                            .pickFiles(type: FileType.image);
-                        if (result.isSinglePick) {
-                          String path = result.files.single.path;
-                          List<String> names = result.names;
+                  if (friend != null) {
+                    setState(() {
+                      _key = friend;
+                    });
+                  } else {
+                    showSnackbar(
+                        context, "Please Select a Friend's list to send note");
+                  }
+                },
+              ),
+              (_key != null) ? Text("${_key['name']}") : Container(),
+              (widget.steg)
+                  ? InputFilesButton(
+                      text: "Select Image to Encrypt",
+                      onPressed: () async {
+                        try {
+                          FilePickerResult result = await FilePicker.platform
+                              .pickFiles(type: FileType.image);
+                          if (result.isSinglePick) {
+                            String path = result.files.single.path;
+                            List<String> names = result.names;
 
-                          if (path != null) {
-                            setState(() {
-                              imgFileName = names[0];
-                              imgFilePath = path;
-                            });
+                            if (path != null) {
+                              setState(() {
+                                imgFileName = names[0];
+                                imgFilePath = path;
+                              });
+                            } else {
+                              showSnackbar(context, "Unable to open file!");
+                            }
                           } else {
-                            showSnackbar(context, "Unable to open file!");
+                            showSnackbar(
+                                context, "Please select only one file");
                           }
-                        } else {
-                          showSnackbar(context, "Please select only one file");
+                        } catch (e, s) {
+                          print("$e $s");
                         }
-                      } catch (e, s) {
-                        print("$e $s");
-                      }
-                    },
-                  )
-                : Container(),
-            (widget.steg == true && imgFileName != null)
-                ? Text("$imgFileName")
-                : Container(),
-            InputFilesButton(
-              text: "Encrypt and Share",
-              onPressed: () async {
-                try {
-                  if (_note != null && _key != null) {
-                    String path = await encryptNote(_key, _note);
+                      },
+                    )
+                  : Container(),
+              Text("OR", textAlign: TextAlign.center),
+              (widget.steg)
+                  ? InputFilesButton(
+                      text: "Use QR Steganography",
+                      onPressed: () async {
+                        setState(() {
+                          qrSteg = true;
+                        });
+                      },
+                    )
+                  : Container(),
+              (widget.steg == true && imgFileName != null)
+                  ? Text("$imgFileName")
+                  : Container(),
+              InputFilesButton(
+                text: "Encrypt and Share",
+                onPressed: () async {
+                  setState(() {
+                    _loading = true;
+                  });
+                  try {
+                    if (_note != null && _key != null) {
+                      String path = await encryptNote(_key, _note);
 
-                    if (path != null) {
-                      if (widget.steg == false) {
-                        await Share.shareFiles([
-                          path,
-                        ]);
+                      if (path != null) {
+                        if (widget.steg == false) {
+                          await Share.shareFiles([
+                            path,
+                          ]);
+                        } else {
+                          imglib.Image image;
+                          if (imgFilePath != null && imgFilePath.isNotEmpty) {
+                            image = imglib.decodeImage(
+                                File(imgFilePath).readAsBytesSync().toList());
+                          } else {
+                            ByteData bytes =
+                                await rootBundle.load("assets/images/qr.png");
+                            image = imglib.decodeImage(bytes.buffer.asUint8List(
+                                bytes.offsetInBytes, bytes.lengthInBytes));
+                            imgFileName = "qr.png";
+                          }
+                          String encryptedMsg = await File(path).readAsString();
+                          EncodeRequest req =
+                              EncodeRequest(image, encryptedMsg);
+                          EncodeResponse res = encodeMessageIntoImage(req);
+                          imglib.Image img = res.editableImage;
+
+                          String imgPath =
+                              await storeImageLocally(imgFileName, img);
+
+                          await Share.shareFiles([
+                            imgPath,
+                          ]);
+                        }
                       } else {
-                        imglib.Image image = imglib.decodeImage(
-                            File(imgFilePath).readAsBytesSync().toList());
-                        String encryptedMsg = await File(path).readAsString();
-                        EncodeRequest req = EncodeRequest(image, encryptedMsg);
-                        EncodeResponse res = encodeMessageIntoImage(req);
-                        imglib.Image img = res.editableImage;
-                        
-                        String imgPath =
-                            await storeImageLocally(imgFileName, img);
-
-                        await Share.shareFiles([
-                          imgPath,
-                        ]);
+                        print("Path is null");
+                        showSnackbar(context, "Unable to share");
                       }
                     } else {
-                      print("Path is null");
-                      showSnackbar(context, "Unable to share");
+                      showSnackbar(context, "Please select Note and Friend");
                     }
-                  } else {
-                    showSnackbar(context, "Please select Note and Friend");
+
+                    setState(() {
+                      _loading = false;
+                    });
+                  } catch (e, s) {
+                    print("$e $s");
+                    showSnackbar(context, "Error occured while sharing");
+                    setState(() {
+                      _loading = false;
+                    });
                   }
-                } catch (e, s) {
-                  print("$e $s");
-                  showSnackbar(context, "Error occured while sharing");
-                }
-              },
-            )
-          ],
+                },
+              ),
+              (_loading) ? SpinKitRing(color: kPrimaryColor) : Container(),
+            ],
+          ),
         ),
       ),
     );

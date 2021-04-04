@@ -20,8 +20,12 @@ class DisplayNoteRow extends StatelessWidget {
           Text(
             title,
             style: TextStyle(fontWeight: FontWeight.bold),
+            softWrap: true,
           ),
-          Text(value),
+          Text(
+            (value.length > 20) ? value.substring(0, 20) + "...": value,
+            softWrap: true,
+          ),
         ],
       ),
     );
