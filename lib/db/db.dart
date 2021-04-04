@@ -422,6 +422,17 @@ class DatabaseHelper extends ChangeNotifier {
     return result;
   }
 
+  Future<Keys> getFirstKey() async {
+    Database db = await _openDb();
+    var result = await db.query(keys, orderBy: 'id ASC', limit: 1);
+    
+    if(result.length > 0) {
+      return Keys.fromMapObject(_decrypt(result[0]));
+    }
+
+    return null;
+  }
+
   Future<List<Keys>> getKeysList() async {
     var keysList = await getKeysMapList();
 

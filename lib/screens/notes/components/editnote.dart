@@ -3,6 +3,7 @@ import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/notes/components/notefab.dart';
 
 class EditNote extends StatefulWidget {
+  static const routeName = "EditNote";
   final Note note;
 
   const EditNote({Key key, this.note}) : super(key: key);

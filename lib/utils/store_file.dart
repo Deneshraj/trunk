@@ -1,18 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:encrypt/encrypt.dart';
+import 'package:image/image.dart';
 import 'package:path/path.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:trunk/model/encrypted_file_params.dart';
-import 'package:trunk/utils/text_encrypt.dart';
 
 Future<String> storeFileLocally(String fileName, String dirName, String contents) async {
   var dir = await getExternalStorageDirectory();
   var extDir = await new Directory('${dir.path}/$dirName').create(recursive: true);
   var path = join(extDir.path, fileName);
-  print("$path");
   
   await new Future.delayed(new Duration(seconds: 1));
   bool checkResult =
@@ -34,9 +31,8 @@ Future<String> storeFileLocally(String fileName, String dirName, String contents
 }
 
 Future<String> storeTemporaryFile(String fileName, String contents) async {
-  var dir = await getTemporaryDirectory();
+  var dir = await getExternalStorageDirectory();
   var path = join(dir.path, fileName);
-  print("$path");
   
   await new Future.delayed(new Duration(seconds: 1));
 
@@ -49,19 +45,32 @@ Future<String> storeTemporaryFile(String fileName, String contents) async {
   }
 }
 
-Future<EncryptedFileParams> storeEncryptedTemporaryFile(String fileName, String contents) async {
+Future<String> storeImageLocally(String fileName, Image img) async{
+  var dir = await getTemporaryDirectory();
+  var path = join(dir.path, fileName);
+
+  await new Future.delayed(new Duration(seconds: 1));
+
+  try {
+    File file = File(path);
+    await file.create(recursive: true);
+    await file.writeAsBytes(img.getBytes().toList());
+    return path;
+  } catch(e) {
+    print("$e");
+    return null;
+  }    
+}
+
+Future<String> storeEncryptedTemporaryFile(String fileName, String contents) async {
   var dir = await getExternalCacheDirectories();
   var filePath = join(dir[0].path, fileName);
 
   await new Future.delayed(new Duration(seconds: 1));
 
   try {
-    Key key = Key.fromSecureRandom(32);
-    EncryptText encryptor = EncryptText(key);
-    String encryptedText = encryptor.aesEncrypt(contents);
-    
-    await writeFile(filePath, encryptedText);
-    return EncryptedFileParams(key, path: filePath);
+    await writeFile(filePath, contents);
+    return filePath;
   } catch(e, s) {
     print("$e $s");
     return null;

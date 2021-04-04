@@ -1,21 +1,24 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:trunk/db/db.dart';
-import 'package:trunk/model/encrypted_file_params.dart';
 import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/modals.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/model/note.dart';
+import 'package:trunk/screens/notes/components/addnote.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
+import 'package:trunk/utils/encrypt_note.dart';
 import 'package:trunk/utils/rsa_encrypt.dart';
 import 'package:trunk/utils/store_file.dart';
 
 import '../../constants.dart';
 
 class Notes extends StatefulWidget {
+  static const routeName = "Notes";
   @override
   _NotesState createState() => _NotesState();
 }
@@ -85,27 +88,14 @@ class _NotesState extends State<Notes> {
     } else if (option == SHARE_WITH_FRIEND) {
       Note note = notes[_selected];
       // TODO:Make only one file to share
-      String jsonString = jsonEncode(note.toMap());
-      EncryptedFileParams params =
-          await storeEncryptedTemporaryFile("${note.title}.nt", jsonString);
       Map<String, dynamic> publicKey =
           await _getKeyToEncryptModal(context, databaseHelper);
 
       if (publicKey != null) {
-        String encryptedKey =
-            await rsaEncrypt(publicKey['public_key'], params.key.bytes);
-        Map<String, String> map = {
-          'title': publicKey['title'],
-          'encryptedText': encryptedKey,
-        };
-        print("${params.key} $encryptedKey");
-        String encryptedKeyPath =
-            await storeTemporaryFile("key.enc", jsonEncode(map));
-
-        if (params.path != null) {
+        String path = await encryptNote(publicKey, note);
+        if (path != null) {
           await Share.shareFiles([
-            params.path,
-            encryptedKeyPath,
+            path,
           ]);
           setState(() {
             _appBar = _defaultBar;
@@ -129,8 +119,8 @@ class _NotesState extends State<Notes> {
   Widget build(BuildContext context) {
     final Notebooks _notebook = ModalRoute.of(context).settings.arguments;
     final databaseHelper = Provider.of<DatabaseHelper>(context);
-    
-    if(_notebook.fileName == null) {
+
+    if (_notebook.fileName == null) {
       Navigator.of(context).pop();
     }
 
@@ -171,7 +161,10 @@ class _NotesState extends State<Notes> {
           elevation: 5,
           margin: EdgeInsets.all(10),
           child: ListTile(
-            title: Text(notes[index].title),
+            title: Text(
+              notes[index].title,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             onLongPress: () {
               setState(() {
                 _appBar = _selectBar;
@@ -195,7 +188,7 @@ class _NotesState extends State<Notes> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          Navigator.pushNamed(context, '/addnote').then((result) {
+          Navigator.pushNamed(context, AddNote.routeName).then((result) {
             if (result != null) {
               Note resultNote = result;
               // TODO:validate result for null values
@@ -208,6 +201,5 @@ class _NotesState extends State<Notes> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-
   }
 }

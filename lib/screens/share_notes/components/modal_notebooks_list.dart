@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trunk/constants.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/model/notebook.dart';
@@ -15,9 +14,7 @@ class ModalNotebooksList extends StatefulWidget {
 }
 
 class _ModalNotebooksListState extends State<ModalNotebooksList> {
-  List<Notebooks> _notebookList = [
-    new Notebooks(name: PASSWORD, createdAt: DateTime.now())
-  ];
+  List<Notebooks> _notebookList = [];
   bool _noteInitialized = false;
 
   void updateNotebooks() async {

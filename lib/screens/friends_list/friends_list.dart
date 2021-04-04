@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trunk/db/db.dart';
@@ -12,6 +9,7 @@ import '../../constants.dart';
 import 'components/modal_form.dart';
 
 class FriendsList extends StatefulWidget {
+  static const routeName = "FriendsList";
   @override
   _FriendsListState createState() => _FriendsListState();
 }
@@ -104,6 +102,7 @@ class _FriendsListState extends State<FriendsList> {
     );
     return Scaffold(
       appBar: _appBar,
+      drawer: NavDrawer(),
       body: ListView.builder(
           itemCount: friendsList.length,
           itemBuilder: (context, index) {

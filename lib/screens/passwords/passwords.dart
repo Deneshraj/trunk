@@ -10,6 +10,7 @@ import 'package:trunk/screens/passwords/components/alerttextfield.dart';
 import 'components/fieldsdisplay.dart';
 
 class Passwords extends StatefulWidget {
+  static const routeName = "Passwords";
   @override
   _PasswordsState createState() => _PasswordsState();
 }

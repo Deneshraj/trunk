@@ -5,6 +5,8 @@ import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/notes/notes.dart';
+import 'package:trunk/screens/passwords/passwords.dart';
 import '../../constants.dart';
 import 'components/nbcard.dart';
 
@@ -191,7 +193,7 @@ class _NotebookState extends State<Notebook> {
           SliverToBoxAdapter(
             child: GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/passwords');
+                Navigator.pushNamed(context, Passwords.routeName);
               },
               onLongPress: () {},
               child: Container(
@@ -232,8 +234,11 @@ class _NotebookState extends State<Notebook> {
               (context, index) => NBCard(
                 text: notebooks[index].name,
                 onTap: () {
-                  Navigator.pushNamed(context, '/notes',
-                      arguments: notebooks[index]);
+                  Navigator.pushNamed(
+                    context,
+                    Notes.routeName,
+                    arguments: notebooks[index],
+                  );
                 },
                 onLongPress: () {
                   setState(() {

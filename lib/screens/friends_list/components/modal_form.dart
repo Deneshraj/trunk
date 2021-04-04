@@ -59,25 +59,17 @@ class _ModalFormState extends State<ModalForm> {
                     FilePickerResult result =
                         await FilePicker.platform.pickFiles();
                     String path = result.files.single.path;
-                    if (path.endsWith(".aes")) {
-                      File file = File(path);
-                      String keyJson = await file.readAsString();
+                    File file = File(path);
+                    String keyJson = await file.readAsString();
 
-                      Map<String, dynamic> jsonData = jsonDecode(keyJson);
-                      Friend friend = Friend(
-                        name: _friendController.text,
-                        key: Friend.strToPublicKey(jsonData['key']),
-                        title: jsonData['title'],
-                        createdAt: DateTime.now(),
-                      );
-                      Navigator.pop(context, friend);
-                    } else {
-                      showSnackbar(
-                        context,
-                        "Invalid File ${path.split('/')[-1]}",
-                      );
-                      Navigator.pop(context);
-                    }
+                    Map<String, dynamic> jsonData = jsonDecode(keyJson);
+                    Friend friend = Friend(
+                      name: _friendController.text,
+                      key: Friend.strToPublicKey(jsonData['key']),
+                      title: jsonData['title'],
+                      createdAt: DateTime.now(),
+                    );
+                    Navigator.pop(context, friend);
                   } catch (e) {
                     print(e);
                     showSnackbar(

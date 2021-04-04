@@ -19,6 +19,7 @@ import '../../db/db.dart';
 // TODO:Add a Loading Screen while generating keys
 // TODO:Change the extension of the key shared.
 class UserKey extends StatefulWidget {
+  static const routeName = "UserKey";
   @override
   UserKeyState createState() => UserKeyState();
 }
@@ -93,6 +94,17 @@ class UserKeyState extends State<UserKey> {
         });
   }
 
+  Future<void> _shareKey(Map<String, dynamic> keyMap) async {
+    String keysJson = jsonEncode(keyMap);
+    String filePath = await storeFileLocally("pub.key", "keys", keysJson);
+    if (filePath != null) {
+      await Share.shareFiles([filePath], text: "Key");
+      // deleteFile(filePath);
+    } else {
+      showSnackbar(context, "An Error occured while sharing");
+    }
+  }
+
   // void optionsAction(DatabaseHelper databaseHelper, String option) {
   void optionsAction(String option, DatabaseHelper databaseHelper) async {
     if (option == DELETE) {
@@ -103,15 +115,8 @@ class UserKeyState extends State<UserKey> {
         'key': keys[_selected].publicKeyToString(),
         'title': keys[_selected].title,
       };
-      
-      String keysJson = jsonEncode(keyMap);
-      String filePath = await storeFileLocally("key.aes", "keys", keysJson);
-      if(filePath != null) {
-        await Share.shareFiles([filePath], text: "Key");
-        // deleteFile(filePath);
-      } else {
-        showSnackbar(context, "An Error occured while sharing");
-      }
+
+      await _shareKey(keyMap);
     }
 
     setState(() {
@@ -137,7 +142,7 @@ class UserKeyState extends State<UserKey> {
   void addKey(DatabaseHelper databaseHelper, Keys key) async {
     int result = await databaseHelper.insertKey(key);
 
-    if(result != 0) {
+    if (result != 0) {
       showSnackbar(context, "New Key Created Successfully!");
       updateKeys(databaseHelper);
     } else {
@@ -148,7 +153,7 @@ class UserKeyState extends State<UserKey> {
   void deleteKey(DatabaseHelper databaseHelper, Keys key) async {
     int result = await databaseHelper.deleteKey(key);
 
-    if(result != 0) {
+    if (result != 0) {
       showSnackbar(context, "Key ${key.title} Deleted!");
       updateKeys(databaseHelper);
     } else {
@@ -193,6 +198,7 @@ class UserKeyState extends State<UserKey> {
 
     return Scaffold(
       appBar: _appBar,
+      drawer: NavDrawer(),
       body: ListView.builder(
           itemCount: keys.length,
           itemBuilder: (context, index) {
@@ -205,8 +211,13 @@ class UserKeyState extends State<UserKey> {
                     fontSize: 18,
                   ),
                 ),
-                onTap: () {
-                  print("${keys[index].title}");
+                onTap: () async {
+                  Map<String, dynamic> keyMap = {
+                    'key': keys[index].publicKeyToString(),
+                    'title': keys[index].title,
+                  };
+
+                  await _shareKey(keyMap);
                 },
                 onLongPress: () {
                   setState(() {
@@ -269,13 +280,3 @@ class UserKeyState extends State<UserKey> {
     return secureRandom;
   }
 }
-
-
-// Text(
-//   "You have no keys initialised yet!",
-//   style: TextStyle(
-//     fontWeight: FontWeight.bold,
-//     fontSize: 15,
-//   ),
-//   textAlign: TextAlign.center,
-// ),

@@ -3,6 +3,7 @@ import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/notes/components/notefab.dart';
 
 class AddNote extends StatefulWidget {
+  static const routeName = "AddNote";
   @override
   _AddNoteState createState() => _AddNoteState();
 }

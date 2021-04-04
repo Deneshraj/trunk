@@ -1,20 +1,32 @@
-import 'dart:convert';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
-import 'package:trunk/model/encrypted_file_params.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/modals.dart';
+import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
-import 'package:trunk/utils/rsa_encrypt.dart';
+import 'package:trunk/steganography/encoder.dart';
+import 'package:trunk/steganography/request/encode_request.dart';
+import 'package:trunk/steganography/response/encode_response.dart';
+import 'package:trunk/utils/encrypt_note.dart';
+import 'package:image/image.dart' as imglib;
 import 'package:trunk/utils/store_file.dart';
 
 import '../../db/db.dart';
 
 class ShareNoteWithPassword extends StatefulWidget {
   static const routeName = "ShareNoteWithPass";
+  final bool steg;
+
+  const ShareNoteWithPassword({
+    Key key,
+    this.steg = false,
+  }) : super(key: key);
+
   @override
   _ShareNoteWithPasswordState createState() => _ShareNoteWithPasswordState();
 }
@@ -22,6 +34,9 @@ class ShareNoteWithPassword extends StatefulWidget {
 class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
   Note _note;
   Map<String, dynamic> _key;
+
+  String imgFileName; // For Steg
+  String imgFilePath; // For Steg
 
   Future<Note> _getNoteModal(DatabaseHelper databaseHelper) {
     return getNotebookModal(context, databaseHelper);
@@ -39,6 +54,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
       appBar: AppBar(
         title: Text("Sharing note with Password"),
       ),
+      drawer: NavDrawer(),
       body: Container(
         child: Column(
           children: <Widget>[
@@ -74,30 +90,64 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
               },
             ),
             (_key != null) ? Text("${_key['name']}") : Container(),
+            (widget.steg)
+                ? InputFilesButton(
+                    text: "Select Image to Encrypt",
+                    onPressed: () async {
+                      try {
+                        FilePickerResult result = await FilePicker.platform
+                            .pickFiles(type: FileType.image);
+                        if (result.isSinglePick) {
+                          String path = result.files.single.path;
+                          List<String> names = result.names;
+
+                          if (path != null) {
+                            setState(() {
+                              imgFileName = names[0];
+                              imgFilePath = path;
+                            });
+                          } else {
+                            showSnackbar(context, "Unable to open file!");
+                          }
+                        } else {
+                          showSnackbar(context, "Please select only one file");
+                        }
+                      } catch (e, s) {
+                        print("$e $s");
+                      }
+                    },
+                  )
+                : Container(),
+            (widget.steg == true && imgFileName != null)
+                ? Text("$imgFileName")
+                : Container(),
             InputFilesButton(
               text: "Encrypt and Share",
               onPressed: () async {
                 try {
-                  if(_note != null && _key != null) {
-                    String jsonString = jsonEncode(_note.toMap());
-                    EncryptedFileParams params = await storeEncryptedTemporaryFile(
-                        "${_note.title}.nt", jsonString);
+                  if (_note != null && _key != null) {
+                    String path = await encryptNote(_key, _note);
 
-                    String encryptedKey =
-                        await rsaEncrypt(_key['public_key'], params.key.bytes);
-                    Map<String, String> map = {
-                      'title': _key['title'],
-                      'encryptedText': encryptedKey,
-                    };
+                    if (path != null) {
+                      if (widget.steg == false) {
+                        await Share.shareFiles([
+                          path,
+                        ]);
+                      } else {
+                        imglib.Image image = imglib.decodeImage(
+                            File(imgFilePath).readAsBytesSync().toList());
+                        String encryptedMsg = await File(path).readAsString();
+                        EncodeRequest req = EncodeRequest(image, encryptedMsg);
+                        EncodeResponse res = encodeMessageIntoImage(req);
+                        imglib.Image img = res.editableImage;
+                        
+                        String imgPath =
+                            await storeImageLocally(imgFileName, img);
 
-                    String encryptedKeyPath =
-                        await storeTemporaryFile("key.enc", jsonEncode(map));
-
-                    if (params.path != null) {
-                      await Share.shareFiles([
-                        params.path,
-                        encryptedKeyPath,
-                      ]);
+                        await Share.shareFiles([
+                          imgPath,
+                        ]);
+                      }
                     } else {
                       print("Path is null");
                       showSnackbar(context, "Unable to share");
@@ -105,7 +155,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
                   } else {
                     showSnackbar(context, "Please select Note and Friend");
                   }
-                } catch(e, s) {
+                } catch (e, s) {
                   print("$e $s");
                   showSnackbar(context, "Error occured while sharing");
                 }
