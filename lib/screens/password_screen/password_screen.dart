@@ -7,6 +7,7 @@ import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
 
 Future<DatabaseHelper> createDatabaseHelperInstance(String password) async {
@@ -105,6 +106,16 @@ class _PasswordScreenState extends State<PasswordScreen> {
               onPressed: () async {
                 String password = _passwordController.text.trim();
                 await _handleSubmit(databaseHelperInit, password);
+              },
+            ),
+            Text(
+              "OR",
+              textAlign: TextAlign.center,
+            ),
+            InputFilesButton(
+              text: "Import DB",
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, ImportDb.routeName);
               },
             ),
           ],

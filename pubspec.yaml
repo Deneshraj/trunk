@@ -37,6 +37,8 @@ dependencies:
   pointycastle: ^3.0.1
   encrypt: ^5.0.0
   image: ^3.0.2
+  flutter_archive: ^3.0.0
+
   simple_permissions:
     git:
       url: https://github.com/tq-systems/simple_permissions.git
@@ -45,9 +47,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "0.9.0"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+# This is for Flutter Launcher Icon
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
 
 # The following section is specific to Flutter.
 flutter:

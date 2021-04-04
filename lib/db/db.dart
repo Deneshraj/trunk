@@ -74,9 +74,9 @@ class DatabaseHelper extends ChangeNotifier {
     var hashedPassword = SHA256Digest().process(
       Uint8List.fromList(key.codeUnits),
     );
-    bool hash = await checkHash(String.fromCharCodes(hashedPassword));
-    
-    if(hash == true) {
+    bool hash = await checkHash(hashedPassword);
+
+    if (hash == true) {
       _cipher = EncryptText(
         enc.Key(
           hashedPassword,
@@ -88,27 +88,30 @@ class DatabaseHelper extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> checkHash(String hashedPassword) async {
+  Future<bool> checkHash(Uint8List password) async {
     String hashFile = await getHashFile();
-    if(hashFile == null) {
+    String hashedPassword = String.fromCharCodes(
+      SHA256Digest().process(password),
+    );
+    if (hashFile == null) {
       createHashFile(hashedPassword);
       return true;
     }
-    
+
     File file = File(hashFile);
     String passToCheck = await file.readAsString();
-    if(passToCheck == "") {
+    if (passToCheck == "") {
       file.writeAsString(hashedPassword);
       return true;
     }
-    
+
     return (passToCheck == hashedPassword);
   }
 
   Future<String> getHashFile() async {
     String hashPath = join(await getDatabasesPath(), hashFileName);
     File hashFile = File(hashPath);
-    if(await hashFile.exists()) {
+    if (await hashFile.exists()) {
       return hashPath;
     }
     return null;
@@ -118,7 +121,7 @@ class DatabaseHelper extends ChangeNotifier {
     String hashPath = join(await getDatabasesPath(), hashFileName);
     File hashFile = File(hashPath);
 
-    if(!(await hashFile.exists())) {
+    if (!(await hashFile.exists())) {
       hashFile.create(recursive: true);
       hashFile.writeAsString(hashedPassword);
     }
@@ -425,8 +428,8 @@ class DatabaseHelper extends ChangeNotifier {
   Future<Keys> getFirstKey() async {
     Database db = await _openDb();
     var result = await db.query(keys, orderBy: 'id ASC', limit: 1);
-    
-    if(result.length > 0) {
+
+    if (result.length > 0) {
       return Keys.fromMapObject(_decrypt(result[0]));
     }
 

@@ -2,13 +2,17 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
 import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/utils/db_zip.dart';
 
 class ExportDb extends StatefulWidget {
   static const routeName = "ExportDb";
@@ -29,11 +33,16 @@ class _ExportDbState extends State<ExportDb> {
       body: InputFilesButton(
         text: "Export to",
         onPressed: () async {
-          String dbPath = await FilePicker.platform.getDirectoryPath();
-          if(dbPath != null && dbPath.isNotEmpty) {
-            File dbFile = File(dbPath + "trunk.enc");
-            // List<Notebooks>  nbList = await databaseHelper.getNotebookList();            
-            showSnackbar(context, "Exporting DB to the selected Directory");
+          Directory exportedDir = await getExternalStorageDirectory();
+          if(exportedDir != null && exportedDir.path != null) {
+            String path = await getDatabasesPath();
+            Zip zipper = Zip(exportedDir.path, Directory(path));
+            File zipFile = await zipper.zip("exported_db.zip");
+            if(zipFile != null) {
+              showSnackbar(context, "DB File stored in ${exportedDir.path}");
+            } else {
+              showSnackbar(context, "An Error occured while exporting db!");
+            }
           } else {
             showSnackbar(context, "Please select a valid Directory");
           }
