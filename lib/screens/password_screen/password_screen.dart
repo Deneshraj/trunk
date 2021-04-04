@@ -115,7 +115,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
             InputFilesButton(
               text: "Import DB",
               onPressed: () {
-                Navigator.pushReplacementNamed(context, ImportDb.routeName);
+                Navigator.pushNamed(context, ImportDb.routeName);
               },
             ),
           ],

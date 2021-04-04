@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:trunk/constants.dart';
 import 'package:trunk/db/db.dart';
@@ -27,6 +26,8 @@ void main() async {
   TODO:Define Architecture and Working
   TODO:Change the color of the selected item
   TODO:Pad the password
+  TODO:Are you sure you want to exit section on back button
+  TODO:Add Spinner
   */
   runApp(Trunk());
 }
