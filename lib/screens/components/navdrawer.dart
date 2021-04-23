@@ -15,6 +15,7 @@ import 'package:trunk/screens/key/userkey.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
 import 'package:trunk/utils/store_file.dart';
+import 'package:trunk/utils/theme_notifier.dart';
 
 class NavDrawer extends StatelessWidget {
   const NavDrawer({
@@ -24,11 +25,14 @@ class NavDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DatabaseHelper databaseHelper = Provider.of<DatabaseHelper>(context);
+    ThemeNotifier notifier = Provider.of<ThemeNotifier>(context);
+
     List<Map<String, dynamic>> shareNoteList = [
       {
         'title': "Share securely using steganography",
         'onTap': () {
-          Navigator.popAndPushNamed(context, ShareNoteWithPassword.stegRouteName);
+          Navigator.popAndPushNamed(
+              context, ShareNoteWithPassword.stegRouteName);
         },
       },
       {
@@ -42,17 +46,16 @@ class NavDrawer extends StatelessWidget {
 
     return Drawer(
       child: ListView(
-        children: [
-          DrawerHeader(
-            child: Text(
-              "Trunk",
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
+        children: <Widget>[
+          SizedBox(height: 20),
+          Text(
+            "Trunk",
+            style: TextStyle(
+              fontSize: 25,
+              fontFamily: "mulish",
+              fontWeight: FontWeight.w900,
             ),
-            margin: EdgeInsets.only(bottom: 0),
+            textAlign: TextAlign.center,
           ),
           ListTile(
             title: Text("Home"),
@@ -76,7 +79,7 @@ class NavDrawer extends StatelessWidget {
             title: Text("Share key"),
             onTap: () async {
               Keys key = await databaseHelper.getFirstKey();
-              if(key == null) {
+              if (key == null) {
                 showSnackbar(context, "Please generate your key");
                 Navigator.pop(context);
               } else {
@@ -120,6 +123,12 @@ class NavDrawer extends StatelessWidget {
             title: Text("Friends List"),
             onTap: () {
               Navigator.pushReplacementNamed(context, FriendsList.routeName);
+            },
+          ),
+          ListTile(
+            title: Text("Switch Theme"),
+            onTap: () {
+              notifier.toggleTheme();
             },
           ),
           ListTile(

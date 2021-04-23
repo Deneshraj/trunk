@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/input_text_field.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
@@ -82,27 +83,14 @@ class _PasswordScreenState extends State<PasswordScreen> {
           padding: EdgeInsets.all(20),
           child: ListView(
             children: <Widget>[
-              TextField(
-                  // TODO:Extract this widget and create separate widtet
-                  autofocus: true,
-                  textInputAction: TextInputAction.go,
-                  onSubmitted: (value) async {
-                    await _handleSubmit(databaseHelperInit, value);
-                  },
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    isDense: true,
-                    hintText: "Enter the Master password",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(width: 1.0),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
-                  style: TextStyle(fontSize: 18),
-                  controller: _passwordController),
+              InputTextField(
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value) async {
+                  await _handleSubmit(databaseHelperInit, value);
+                },
+                hintText: "Enter the Master password",
+                controller: _passwordController,
+              ),
               InputFilesButton(
                 text: "Decrypt Notebook",
                 onPressed: () async {

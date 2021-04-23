@@ -27,6 +27,7 @@ class _ModalFormState extends State<ModalForm> {
               style: TextStyle(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
+            SizedBox(height: 10),
             TextField(
               autofocus: true,
               onSubmitted: (value) {
@@ -51,6 +52,7 @@ class _ModalFormState extends State<ModalForm> {
               style: TextStyle(fontSize: 18),
               controller: _friendController,
             ),
+            SizedBox(height: 10),
             AlertButton(
               text: "Import file",
               onPressed: () async {

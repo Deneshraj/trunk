@@ -35,6 +35,8 @@ class _EditNoteState extends State<EditNote> {
     _titleController.text = widget.note.title;
     _notesController.text = widget.note.note;
 
+    Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Note"),
@@ -83,37 +85,44 @@ class _EditNoteState extends State<EditNote> {
         ),
       ),
       floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          NoteFab(
-            tag: (_enabled) ? "save" : "edit",
-            onPressed: () {
-              if (!_enabled) {
-                setState(() {
-                  _enabled = true;
-                  myFocusNode.requestFocus();
-                });
-              } else {
-                Navigator.pop(
-                  context,
-                  new Note.withId(
-                    id: widget.note.id,
-                    title: _titleController.text,
-                    note: _notesController.text,
-                    dateCreated: DateTime.now(),
-                  ),
-                );
-              }
-            },
-            iconData: Icons.edit,
+          Container(
+            width: size.width * 0.4,
+            child: NoteFab(
+              tag: (_enabled) ? "save" : "edit",
+              onPressed: () {
+                if (!_enabled) {
+                  setState(() {
+                    _enabled = true;
+                    myFocusNode.requestFocus();
+                  });
+                } else {
+                  Navigator.pop(
+                    context,
+                    new Note.withId(
+                      id: widget.note.id,
+                      title: _titleController.text,
+                      note: _notesController.text,
+                      dateCreated: DateTime.now(),
+                    ),
+                  );
+                }
+              },
+              iconData: Icons.edit,
+            ),
           ),
-          NoteFab(
-            tag: "cancel",
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            color: Colors.grey[700],
-            iconData: Icons.close,
+          SizedBox(width: size.width * 0.1),
+          Container(
+            width: size.width * 0.4,
+            child: NoteFab(
+              tag: "cancel",
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              color: Colors.grey[700],
+              iconData: Icons.close,
+            ),
           ),
         ],
       ),

@@ -20,7 +20,7 @@ class AlertButton extends StatelessWidget {
         padding:
             MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 20.0)),
         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-        backgroundColor: MaterialStateProperty.all<Color>(backgroundColor),
+        backgroundColor: MaterialStateProperty.all<Color>(backgroundColor.withAlpha(230)),
         shape: MaterialStateProperty.all(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(100),

@@ -149,56 +149,52 @@ class _NotesState extends State<Notes> {
       ],
       backgroundColor: Colors.deepPurple,
     );
-    return WillPopScope(
-      onWillPop: () => exitAlert(context),
-      child: Scaffold(
-        appBar: _appBar,
-        body: ListView.builder(
-          itemCount: notes.length,
-          itemBuilder: (context, index) => Card(
-            elevation: 5,
-            margin: EdgeInsets.all(10),
-            child: ListTile(
-              title: Text(
-                notes[index].title,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              onLongPress: () {
-                setState(() {
-                  _appBar = _selectBar;
-                  _selected = index;
-                });
-              },
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditNote(note: notes[index]),
-                  ),
-                );
-
-                if (result != null) {
-                  editNote(databaseHelper, result, _notebook);
-                }
-              },
+    return Scaffold(
+      appBar: _appBar,
+      body: ListView.builder(
+        itemCount: notes.length,
+        itemBuilder: (context, index) => Card(
+          elevation: 2,
+          child: ListTile(
+            title: Text(
+              notes[index].title,
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
+            onLongPress: () {
+              setState(() {
+                _appBar = _selectBar;
+                _selected = index;
+              });
+            },
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditNote(note: notes[index]),
+                ),
+              );
+
+              if (result != null) {
+                editNote(databaseHelper, result, _notebook);
+              }
+            },
           ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            Navigator.pushNamed(context, AddNote.routeName).then((result) {
-              if (result != null) {
-                Note resultNote = result;
-                // TODO:validate result for null values
-                addNote(databaseHelper, result, _notebook);
-              }
-            });
-          },
-          label: Text("Note"),
-          icon: Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          Navigator.pushNamed(context, AddNote.routeName).then((result) {
+            if (result != null) {
+              Note resultNote = result;
+              // TODO:validate result for null values
+              addNote(databaseHelper, result, _notebook);
+            }
+          });
+        },
+        label: Text("Note"),
+        icon: Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

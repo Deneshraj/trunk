@@ -139,7 +139,7 @@ class DatabaseHelper extends ChangeNotifier {
   }
 
   Future<void> _closeDb(Database db) async {
-    print("Closing");
+    db.close();
   }
 
   void _deleteDb() async {

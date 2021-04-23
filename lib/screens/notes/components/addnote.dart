@@ -14,7 +14,9 @@ class _AddNoteState extends State<AddNote> {
   Widget build(BuildContext context) {
     TextEditingController _titleController = new TextEditingController();
     TextEditingController _notesController = new TextEditingController();
-
+    
+    Size size = MediaQuery.of(context).size;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Note"),
@@ -58,30 +60,37 @@ class _AddNoteState extends State<AddNote> {
         ),
       ),
       floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          NoteFab(
-            tag: "save",
-            onPressed: () {
-              String title = _titleController.text;
-              String note = _notesController.text;
-              Navigator.pop(
-                  context,
-                  new Note(
-                    title: title,
-                    note: note,
-                    dateCreated: DateTime.now(),
-                  ));
-            },
-            iconData: Icons.save,
+          Container(
+            width: size.width * 0.4,
+            child: NoteFab(
+              tag: "save",
+              onPressed: () {
+                String title = _titleController.text;
+                String note = _notesController.text;
+                Navigator.pop(
+                    context,
+                    new Note(
+                      title: title,
+                      note: note,
+                      dateCreated: DateTime.now(),
+                    ));
+              },
+              iconData: Icons.save,
+            ),
           ),
-          NoteFab(
-            tag: "cancel",
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            color: Colors.grey[700],
-            iconData: Icons.close,
+          SizedBox(width: size.width * 0.1),
+          Container(
+            width: size.width * 0.4,
+            child: NoteFab(
+              tag: "cancel",
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              color: Colors.grey[700],
+              iconData: Icons.close,
+            ),
           ),
         ],
       ),

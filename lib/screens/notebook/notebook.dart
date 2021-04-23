@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
+import 'package:trunk/screens/components/input_text_field.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/notes/notes.dart';
@@ -25,9 +26,6 @@ class _NotebookState extends State<Notebook> {
   static final AppBar _defaultBar = AppBar(
     title: Text(
       "Trunk",
-      style: TextStyle(
-        fontWeight: FontWeight.w900,
-      ),
     ),
   );
   Notebooks passwordNb = Notebooks(name: PASSWORD, createdAt: DateTime.now());
@@ -84,14 +82,16 @@ class _NotebookState extends State<Notebook> {
     return showDialog(
         context: context,
         builder: (context) {
+          Size size = MediaQuery.of(context).size;
           return AlertDialog(
             title: Text(
               "New Notebook",
               textAlign: TextAlign.center,
             ),
-            content: TextField(
-              // TODO:Extract this widget and create separate widtet
-              autofocus: true,
+            content: InputTextField(
+              controller: customController,
+              hintText: "Notebook Name",
+              textInputAction: TextInputAction.go,
               onSubmitted: (value) {
                 if (value.isEmpty) {
                   showSnackbar(context, "Please Enter a valid Notebook name!");
@@ -100,42 +100,45 @@ class _NotebookState extends State<Notebook> {
                   Navigator.of(context).pop(value);
                 }
               },
-              textInputAction: TextInputAction.go,
-              decoration: InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                isDense: true,
-                hintText: "Notebook Name",
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(width: 1.0),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              style: TextStyle(fontSize: 18),
-              controller: customController,
             ),
             actions: <Widget>[
-              AlertButton(
-                text: "Add",
-                onPressed: () {
-                  String value = customController.text.toString();
-                  if (value.isNotEmpty) {
-                    Navigator.of(context).pop(value);
-                  } else {
-                    showSnackbar(
-                        context, "Please Enter a valid Notebook name!");
+              Container(
+                width: size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: size.width * 0.3,
+                      child: AlertButton(
+                        text: "Add",
+                        onPressed: () {
+                          String value = customController.text.toString();
+                          if (value.isNotEmpty) {
+                            Navigator.of(context).pop(value);
+                          } else {
+                            showSnackbar(
+                                context, "Please Enter a valid Notebook name!");
 
-                    Navigator.of(context).pop();
-                  }
-                },
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(width: size.width * 0.05),
+                    Container(
+                      width: size.width * 0.3,
+                      child: AlertButton(
+                        text: "Cancel",
+                        backgroundColor: Colors.grey,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              AlertButton(
-                text: "Cancel",
-                backgroundColor: Colors.grey,
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+              SizedBox(height: 10),
             ],
           );
         });
@@ -196,36 +199,15 @@ class _NotebookState extends State<Notebook> {
         body: CustomScrollView(
           slivers: <Widget>[
             SliverToBoxAdapter(
-              child: GestureDetector(
+              child: NBCard(
+                text: PASSWORD,
                 onTap: () {
                   Navigator.pushNamed(context, Passwords.routeName);
                 },
-                onLongPress: () {},
-                child: Container(
-                  height: 200,
-                  margin: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        //TODO: Add the dark mode
-                        color: Colors.grey[300],
-                        blurRadius: 30.0,
-                      ),
-                    ],
-                    color: Colors.white,
-                    border: Border(
-                      left: BorderSide(color: Colors.deepPurple, width: 5.0),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      PASSWORD,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                border: Border(
+                  left: BorderSide(color: Colors.deepPurple, width: 5.0),
                 ),
+                onLongPress: () {},
               ),
             ),
             SliverGrid(

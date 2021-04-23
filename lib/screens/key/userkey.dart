@@ -41,6 +41,7 @@ class UserKeyState extends State<UserKey> {
     return showDialog(
         context: context,
         builder: (context) {
+          Size size = MediaQuery.of(context).size;
           return AlertDialog(
             title: Text(
               "New Security Key",
@@ -71,26 +72,42 @@ class UserKeyState extends State<UserKey> {
               controller: titleController,
             ),
             actions: <Widget>[
-              AlertButton(
-                text: "Add",
-                onPressed: () {
-                  String value = titleController.text.toString();
-                  if (value.isNotEmpty) {
-                    Navigator.of(context).pop(value);
-                  } else {
-                    showSnackbar(context, "Please Enter a valid title!");
+              Container(
+                width: size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: size.width * 0.3,
+                      child: AlertButton(
+                        text: "Add",
+                        onPressed: () {
+                          String value = titleController.text.toString();
+                          if (value.isNotEmpty) {
+                            Navigator.of(context).pop(value);
+                          } else {
+                            showSnackbar(context, "Please Enter a valid title!");
 
-                    Navigator.of(context).pop();
-                  }
-                },
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(width: size.width * 0.05),
+                    Container(
+                      width: size.width * 0.3,
+                      child: AlertButton(
+                        text: "Cancel",
+                        backgroundColor: Colors.grey,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              AlertButton(
-                text: "Cancel",
-                backgroundColor: Colors.grey,
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+              SizedBox(height: 10),
             ],
           );
         });
