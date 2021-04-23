@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:file_picker/file_picker.dart';
@@ -19,11 +20,13 @@ import 'package:trunk/utils/encrypt_note.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:trunk/utils/exit_alert.dart';
 import 'package:trunk/utils/store_file.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../db/db.dart';
 
 class ShareNoteWithPassword extends StatefulWidget {
   static const routeName = "ShareNoteWithPass";
+  static const stegRouteName = "ShareNoteWithSteg";
   final bool steg;
 
   const ShareNoteWithPassword({
@@ -127,7 +130,9 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
                       },
                     )
                   : Container(),
-              Text("OR", textAlign: TextAlign.center),
+              (widget.steg)
+                  ? Text("OR", textAlign: TextAlign.center)
+                  : Container(),
               (widget.steg)
                   ? InputFilesButton(
                       text: "Use QR Steganography",
@@ -158,21 +163,56 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
                           ]);
                         } else {
                           imglib.Image image;
-                          if (imgFilePath != null && imgFilePath.isNotEmpty) {
+                          if (imgFilePath != null &&
+                              imgFilePath.isNotEmpty &&
+                              !qrSteg) {
                             image = imglib.decodeImage(
                                 File(imgFilePath).readAsBytesSync().toList());
                           } else {
-                            ByteData bytes =
-                                await rootBundle.load("assets/images/qr.png");
-                            image = imglib.decodeImage(bytes.buffer.asUint8List(
-                                bytes.offsetInBytes, bytes.lengthInBytes));
-                            imgFileName = "qr.png";
+                            final qrValidatorResult = QrValidator.validate(
+                              data: "Trunk Secure Password Manager",
+                              version: 40,
+                              errorCorrectionLevel: QrErrorCorrectLevel.L,
+                            );
+                            if (qrValidatorResult.status ==
+                                QrValidationStatus.valid) {
+                              final qrCode = qrValidatorResult.qrCode;
+
+                              final painter = QrPainter.withQr(
+                                qr: qrCode,
+                                color: const Color(0xFF000000),
+                                gapless: true,
+                                embeddedImageStyle: null,
+                                embeddedImage: null,
+                              );
+
+                              ByteData bytes = await painter.toImageData(2048,
+                                  format: ImageByteFormat.png);
+                              image = imglib.decodeImage(bytes.buffer
+                                  .asUint8List(bytes.offsetInBytes,
+                                      bytes.lengthInBytes));
+                              imgFileName = "qr.png";
+                            } else {
+                              showSnackbar(context, "Something went wrong!");
+                              print(qrValidatorResult.error);
+                              setState(() {
+                                _loading = true;
+                              });
+                              return;
+                            }
                           }
+
                           String encryptedMsg = await File(path).readAsString();
-                          EncodeRequest req =
-                              EncodeRequest(image, encryptedMsg);
-                          EncodeResponse res = encodeMessageIntoImage(req);
-                          imglib.Image img = res.editableImage;
+                          imglib.Image img;
+
+                          if(qrSteg) {
+                            // Editing Image
+                          } else {
+                            EncodeRequest req =
+                                EncodeRequest(image, encryptedMsg);
+                            EncodeResponse res = encodeMessageIntoImage(req);
+                            img = res.editableImage;
+                          }
 
                           String imgPath =
                               await storeImageLocally(imgFileName, img);

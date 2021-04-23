@@ -15,7 +15,6 @@ import 'package:trunk/screens/notes/components/editnote.dart';
 import 'package:trunk/screens/notes/notes.dart';
 import 'package:trunk/screens/passwords/passwords.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
-import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
 
 import 'screens/password_screen/password_screen.dart';
 
@@ -158,7 +157,7 @@ class _TrunkState extends State<Trunk> {
                 value: databaseHelperInit.databaseHelper,
                 child: ShareNoteWithPassword(steg: false),
               ),
-          ShareNoteWithSteg.routeName: (context) =>
+          ShareNoteWithPassword.stegRouteName: (context) =>
               ChangeNotifierProvider<DatabaseHelper>.value(
                 value: databaseHelperInit.databaseHelper,
                 child: ShareNoteWithPassword(steg: true),

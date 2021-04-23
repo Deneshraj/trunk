@@ -2,8 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:encrypt/encrypt.dart' as crypto;
-import 'package:trunk/steganography/request/decode_request.dart';
 import 'package:trunk/steganography/response/decode_response.dart';
 
 final int byteSize = 8;

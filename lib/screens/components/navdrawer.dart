@@ -14,7 +14,6 @@ import 'package:trunk/screens/friends_list/friends_list.dart';
 import 'package:trunk/screens/key/userkey.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
-import 'package:trunk/screens/share_notes/share_note_with_steg.dart';
 import 'package:trunk/utils/store_file.dart';
 
 class NavDrawer extends StatelessWidget {
@@ -29,7 +28,7 @@ class NavDrawer extends StatelessWidget {
       {
         'title': "Share securely using steganography",
         'onTap': () {
-          Navigator.popAndPushNamed(context, ShareNoteWithSteg.routeName);
+          Navigator.popAndPushNamed(context, ShareNoteWithPassword.stegRouteName);
         },
       },
       {
