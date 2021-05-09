@@ -24,6 +24,7 @@ Future<DatabaseHelper> createDatabaseHelperInstance(String password) async {
     return null;
   } on DatabaseException catch (e, s) {
     print("\n\n\n Database Exception $e");
+    print("$s");
   } catch (e, s) {
     print("Exception $e");
     print("Exception $s");

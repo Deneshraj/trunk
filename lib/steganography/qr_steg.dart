@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'dart:typed_data';
 import 'package:image/image.dart' as imglib;
@@ -185,12 +184,12 @@ List getQrPixels(imglib.Image img) {
     stdout.write("${data[i]} ");
   }
   print("\n end");
-  // for (int i = 0; i < height; i++) {
-  //   imgPixels.add(data.sublist(i * width, (i + 1) * width));
-  // }
+  for (int i = 0; i < height; i++) {
+    imgPixels.add(data.sublist(i * width, (i + 1) * width));
+  }
 
-  // if ((imgPixels.length * imgPixels[0].length) == data.length)
-  //   return imgPixels;
+  if ((imgPixels.length * imgPixels[0].length) == data.length)
+    return imgPixels;
 
   return [];
 }

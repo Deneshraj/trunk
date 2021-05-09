@@ -138,9 +138,6 @@ class DatabaseHelper extends ChangeNotifier {
     return (fileName == null) ? _initDb(path) : _initNotebookDb(path);
   }
 
-  Future<void> _closeDb(Database db) async {
-    db.close();
-  }
 
   void _deleteDb() async {
     var databasePath = await getDatabasesPath();
@@ -187,6 +184,7 @@ class DatabaseHelper extends ChangeNotifier {
       return file.delete(recursive: true);
     } catch (e, s) {
       print("Exception caught $e");
+      print("$s");
     }
 
     return null;
@@ -240,7 +238,7 @@ class DatabaseHelper extends ChangeNotifier {
     Database db = await _openDb();
     if (db != null) {
       var result = await db.query(notebook, orderBy: 'id ASC');
-      await _closeDb(db);
+      
 
       return result;
     }
@@ -250,7 +248,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getNotebooksByFileName(String name) async {
     Database db = await _openDb();
     var res = await db.query(notebook, where: "file_name = '$name'");
-    await _closeDb(db);
+    
 
     return res;
   }
@@ -283,7 +281,7 @@ class DatabaseHelper extends ChangeNotifier {
       _encrypt(nb.toMap()),
     );
     await _createDbFile(fileName);
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -300,7 +298,7 @@ class DatabaseHelper extends ChangeNotifier {
     } else {
       result = 1;
     }
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -310,7 +308,7 @@ class DatabaseHelper extends ChangeNotifier {
     if (notebook.fileName != null) {
       Database db = await _openDb(fileName: notebook.fileName);
       var result = await db.query(notes, orderBy: 'id ASC');
-      await _closeDb(db);
+      
 
       return result;
     }
@@ -341,7 +339,7 @@ class DatabaseHelper extends ChangeNotifier {
       notes,
       _encrypt(note.toMap()),
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -353,7 +351,7 @@ class DatabaseHelper extends ChangeNotifier {
       _encrypt(note.toMap()),
       where: "id = '${note.id}'",
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -361,7 +359,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<int> deleteNote(Note note, Notebooks notebook) async {
     Database db = await _openDb(fileName: notebook.fileName);
     var result = await db.delete(notes, where: "id = '${note.id}'");
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -370,7 +368,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getPasswordsMapList() async {
     Database db = await _openDb();
     var result = await db.query(password, orderBy: 'id ASC');
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -394,7 +392,7 @@ class DatabaseHelper extends ChangeNotifier {
       password,
       _encrypt(pass.toMap()),
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -403,7 +401,7 @@ class DatabaseHelper extends ChangeNotifier {
     Database db = await _openDb();
     var result = await db.update(password, _encrypt(pass.toMap()),
         where: "id = '${pass.id}'");
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -411,7 +409,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<int> deletePassword(Password pass) async {
     Database db = await _openDb();
     var result = await db.delete(password, where: "id = '${pass.id}'");
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -420,7 +418,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getKeysMapList() async {
     Database db = await _openDb();
     var result = await db.query(keys, orderBy: 'id ASC');
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -453,7 +451,7 @@ class DatabaseHelper extends ChangeNotifier {
     Database db = await _openDb();
     var result =
         await db.query(keys, where: "title = '${_cipher.aesEncrypt(title)}'");
-    await _closeDb(db);
+    
 
     if (result.length > 0) {
       return Keys.fromMapObject(_decrypt(result[0]));
@@ -468,7 +466,7 @@ class DatabaseHelper extends ChangeNotifier {
       keys,
       _encrypt(key.toMap()),
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -480,7 +478,7 @@ class DatabaseHelper extends ChangeNotifier {
       _encrypt(key.toMap()),
       where: "id = '${key.id}'",
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -488,7 +486,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<int> deleteKey(Keys key) async {
     Database db = await _openDb();
     var result = await db.delete(keys, where: "id = '${key.id}'");
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -497,7 +495,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getFriendsMapList() async {
     Database db = await _openDb();
     var result = await db.query(friends, orderBy: 'id ASC');
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -521,7 +519,7 @@ class DatabaseHelper extends ChangeNotifier {
       friends,
       _encrypt(friend.toMap()),
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -529,7 +527,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<int> insertFriendMap(Map<String, dynamic> friendMap) async {
     Database db = await _openDb();
     var result = await db.insert(friends, _encrypt(friendMap));
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -541,7 +539,7 @@ class DatabaseHelper extends ChangeNotifier {
       _encrypt(friend.toMap()),
       where: "id = '${friend.id}'",
     );
-    await _closeDb(db);
+    
 
     return result;
   }
@@ -549,7 +547,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<int> deleteFriend(Friend friend) async {
     Database db = await _openDb();
     var result = await db.delete(friends, where: "id = ${friend.id}");
-    await _closeDb(db);
+    
 
     return result;
   }

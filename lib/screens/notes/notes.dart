@@ -9,7 +9,6 @@ import 'package:trunk/model/note.dart';
 import 'package:trunk/screens/notes/components/addnote.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
 import 'package:trunk/utils/encrypt_note.dart';
-import 'package:trunk/utils/exit_alert.dart';
 
 import '../../constants.dart';
 
@@ -186,10 +185,15 @@ class _NotesState extends State<Notes> {
           Navigator.pushNamed(context, AddNote.routeName).then((result) {
             if (result != null) {
               Note resultNote = result;
-              // TODO:validate result for null values
-              addNote(databaseHelper, result, _notebook);
+              if(resultNote.title.isNotEmpty && resultNote.note.isNotEmpty) {
+                addNote(databaseHelper, result, _notebook);
+              } else {
+                showSnackbar(context, "Title and Note should not be empty");
+              }
+            } else {
+              showSnackbar(context, "Note not added!");
             }
-          });
+          }).catchError((err) => print(err));
         },
         label: Text("Note"),
         icon: Icon(Icons.add),

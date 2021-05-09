@@ -1,14 +1,8 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:trunk/db/db.dart';
-import 'package:trunk/db/db_init.dart';
-import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
@@ -24,8 +18,6 @@ class ExportDb extends StatefulWidget {
 class _ExportDbState extends State<ExportDb> {
   @override
   Widget build(BuildContext context) {
-    DatabaseHelper databaseHelper = Provider.of<DatabaseHelperInit>(context).databaseHelper;
-
     return WillPopScope(
       onWillPop: () async {
         return exitAlert(context);

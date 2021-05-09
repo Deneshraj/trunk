@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trunk/constants.dart';
 
 class InputTextField extends StatefulWidget {
   final Function onSubmitted;
@@ -28,15 +29,15 @@ class _InputTextFieldState extends State<InputTextField> {
       onSubmitted: widget.onSubmitted,
       textInputAction: widget.textInputAction,
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        contentPadding: EdgeInsets.symmetric(vertical: 7, horizontal: 20),
         isDense: true,
         hintText: widget.hintText,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(width: 1.0, color: Colors.grey[400]),
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(width: 4.5, color: Colors.grey[400]),
           borderRadius: BorderRadius.circular(5),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(width: 1.5, color: Colors.grey[400]),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(width: 5, color: kPrimaryColor),
           borderRadius: BorderRadius.circular(5),
         ),
       ),
