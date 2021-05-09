@@ -7,6 +7,7 @@ class InputTextField extends StatefulWidget {
   final String hintText;
   final TextInputAction textInputAction;
   final bool autoFocus;
+  final bool obscureText;
 
   const InputTextField({
     Key key,
@@ -15,6 +16,7 @@ class InputTextField extends StatefulWidget {
     this.hintText,
     this.textInputAction = TextInputAction.go,
     this.autoFocus = true,
+    this.obscureText = false,
   }) : super(key: key);
   @override
   _InputTextFieldState createState() => _InputTextFieldState();
@@ -25,6 +27,7 @@ class _InputTextFieldState extends State<InputTextField> {
   Widget build(BuildContext context) {
     return TextField(
       // TODO:Extract this widget and create separate widtet
+      obscureText: widget.obscureText,
       autofocus: widget.autoFocus,
       onSubmitted: widget.onSubmitted,
       textInputAction: widget.textInputAction,

@@ -89,6 +89,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 onSubmitted: (value) async {
                   await _handleSubmit(databaseHelperInit, value);
                 },
+                obscureText: true,
                 hintText: "Enter the Master password",
                 controller: _passwordController,
               ),
