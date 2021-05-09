@@ -66,7 +66,7 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             title: Text("Import DB"),
             onTap: () {
-              Navigator.pushNamed(context, ImportDb.routeName);
+              Navigator.pushReplacementNamed(context, ImportDb.routeName);
             },
           ),
           ListTile(
