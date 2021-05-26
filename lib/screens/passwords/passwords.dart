@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:trunk/constants.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/model/password.dart';
-import 'package:trunk/screens/components/alertbutton.dart';
-import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/passwords/components/add_password.dart';
 import 'package:trunk/screens/passwords/components/alerttextfield.dart';
+import 'package:trunk/utils/generate_random_string.dart';
 
 import 'components/fieldsdisplay.dart';
 
@@ -17,6 +17,10 @@ class Passwords extends StatefulWidget {
 
 class _PasswordsState extends State<Passwords> {
   // TODO: Categories of passwords like banking, social media etc.,
+  TextEditingController _urlController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+
   static final AppBar _defaultBar = AppBar(
     title: Text("passwords"),
   );
@@ -44,88 +48,179 @@ class _PasswordsState extends State<Passwords> {
   }
 
   Future<Password> _addPassword(BuildContext context) {
-    TextEditingController _urlController = TextEditingController();
-    TextEditingController _emailController = TextEditingController();
-    TextEditingController _passwordController = TextEditingController();
-
-    return showDialog(
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
+        backgroundColor: Theme.of(context).cardColor,
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(
-              "New Password",
-              textAlign: TextAlign.center,
-            ),
-            content: ListView(
-              children: <Widget>[
-                AlertTextField(
-                  controller: _urlController,
-                  hintText: "URL",
+        isScrollControlled: true,
+        builder: (context) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SizedBox(height: 30),
+                    Text(
+                      "Add Password",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    AlertTextField(
+                      controller: _urlController,
+                      hintText: "URL",
+                    ),
+                    AlertTextField(
+                      controller: _emailController,
+                      hintText: "Email",
+                    ),
+                    AlertTextField(
+                      controller: _passwordController,
+                      hintText: "Password",
+                      // obscureText: true,
+                    ),
+                    Text(
+                      "OR",
+                      textAlign: TextAlign.center,
+                    ),
+                    TextButton(
+                      child: Text("Generate a Random Password"),
+                      onPressed: () {
+                        String randomPassword =
+                            generateRandomString(18, 1, "()~`");
+                        print(randomPassword);
+                      },
+                    ),
+                    SizedBox(height: 10),
+                  ],
                 ),
-                AlertTextField(
-                  controller: _emailController,
-                  hintText: "Email",
-                ),
-                AlertTextField(
-                  controller: _passwordController,
-                  hintText: "Password",
-                  obscureText: true,
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              AlertButton(
-                text: "Add",
-                onPressed: () {
-                  String url = _urlController.text.toString();
-                  String email = _emailController.text.toString();
-                  String password = _passwordController.text.toString();
-                  String msg = "";
-
-                  if (url.isEmpty) {
-                    if (msg.isEmpty)
-                      msg += "Please Enter valid URL";
-                    else
-                      msg += " URL ";
-                  }
-
-                  if (email.isEmpty) {
-                    if (msg.isEmpty)
-                      msg += "Please Enter valid Email";
-                    else
-                      msg += " Email ";
-                  }
-
-                  if (password.isEmpty) {
-                    if (msg.isEmpty)
-                      msg += "Please Enter valid Password";
-                    else
-                      msg += " Password ";
-                  }
-
-                  if (msg.isEmpty) {
-                    Password returnPass = new Password(
-                      title: url,
-                      username: email,
-                      password: password,
-                    );
-                    Navigator.of(context).pop(returnPass);
-                  } else {
-                    showSnackbar(context, msg);
-                    Navigator.of(context).pop();
-                  }
-                },
               ),
-              AlertButton(
-                text: "Cancel",
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                backgroundColor: Colors.grey,
-              ),
-            ],
-          );
-        });
+            ));
+    // return showModalBottomSheet(
+    //     backgroundColor: Colors.transparent,
+    //     isScrollControlled: true,
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return Wrap(
+    //         children: <Widget>[
+    //           Container(
+    //             color: Colors.transparent,
+    //             height: MediaQuery.of(context).size.height * 0.7,
+    //             child: Container(
+    //               decoration: BoxDecoration(
+    //                 color: Theme.of(context).cardColor,
+    //                 borderRadius: BorderRadius.only(
+    //                   topLeft: Radius.circular(10),
+    //                   topRight: Radius.circular(10),
+    //                 ),
+    //               ),
+    //               child: ListView(
+    //                 children: <Widget>[
+    //                   SizedBox(height: 30),
+    //                   Text(
+    //                     "Add Password",
+    //                     textAlign: TextAlign.center,
+    //                     style: TextStyle(
+    //                       fontSize: 20,
+    //                       fontWeight: FontWeight.bold,
+    //                     ),
+    //                   ),
+    //                   SizedBox(height: 20),
+    //                   AlertTextField(
+    //                     controller: _urlController,
+    //                     hintText: "URL",
+    //                   ),
+    //                   AlertTextField(
+    //                     controller: _emailController,
+    //                     hintText: "Email",
+    //                   ),
+    //                   AlertTextField(
+    //                     controller: _passwordController,
+    //                     hintText: "Password",
+    //                     obscureText: true,
+    //                   ),
+    //                   Text(
+    //                     "OR",
+    //                     textAlign: TextAlign.center,
+    //                   ),
+    //                   TextButton(
+    //                     child: Text("Generate a Random Password"),
+    //                     onPressed: () {
+    //                       String randomPassword =
+    //                           generateRandomString(18, 1, "()~`");
+    //                       print(randomPassword);
+    //                     },
+    //                   )
+    //                 ],
+    //               ),
+    //             ),
+    //           )
+    //         ],
+    //       );
+    //     });
+
+    // return showModalBottomSheet(
+    //     context: context,
+    //     builder: (context) {
+    //       return;
+    //     AlertButton(
+    //       text: "Add",
+    //       onPressed: () {
+    //         String url = _urlController.text.toString();
+    //         String email = _emailController.text.toString();
+    //         String password = _passwordController.text.toString();
+    //         String msg = "";
+
+    //         if (url.isEmpty) {
+    //           if (msg.isEmpty)
+    //             msg += "Please Enter valid URL";
+    //           else
+    //             msg += " URL ";
+    //         }
+
+    //         if (email.isEmpty) {
+    //           if (msg.isEmpty)
+    //             msg += "Please Enter valid Email";
+    //           else
+    //             msg += " Email ";
+    //         }
+
+    //         if (password.isEmpty) {
+    //           if (msg.isEmpty)
+    //             msg += "Please Enter valid Password";
+    //           else
+    //             msg += " Password ";
+    //         }
+
+    //         if (msg.isEmpty) {
+    //           Password returnPass = new Password(
+    //             title: url,
+    //             username: email,
+    //             password: password,
+    //           );
+    //           Navigator.of(context).pop(returnPass);
+    //         } else {
+    //           showSnackbar(context, msg);
+    //           Navigator.of(context).pop();
+    //         }
+    //       },
+    //     ),
+    //     AlertButton(
+    //       text: "Cancel",
+    //       onPressed: () {
+    //         Navigator.of(context).pop();
+    //       },
+    //       backgroundColor: Colors.grey,
+    //     ),
+    //   ],
+    // );
+    // });
   }
 
   void updatePasswords(DatabaseHelper databaseHelper) async {
@@ -137,17 +232,6 @@ class _PasswordsState extends State<Passwords> {
         _initialized = true;
       });
     }).catchError((error) => print(error));
-  }
-
-  void addPassword(DatabaseHelper databaseHelper, Password password) async {
-    int result = await databaseHelper.insertPassword(password);
-
-    if (result != 0) {
-      showSnackbar(context, "Password saved!");
-      updatePasswords(databaseHelper);
-    } else {
-      showSnackbar(context, "Error while saving");
-    }
   }
 
   void _showPasswordBottomModalSheet(context, int index) {
@@ -238,6 +322,7 @@ class _PasswordsState extends State<Passwords> {
       ],
       backgroundColor: Colors.deepPurple,
     );
+
     return Scaffold(
       appBar: _appBar,
       body: ListView.builder(
@@ -262,11 +347,15 @@ class _PasswordsState extends State<Passwords> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          _addPassword(context).then((result) {
-            if (result != null) {
-              addPassword(databaseHelper, result);
-            }
-          }).catchError((err) => print(err));
+          var res = await Navigator.pushNamed(context, AddPassword.routeName);
+          if(res != null && res == true) {
+            updatePasswords(databaseHelper);
+          }
+          // _addPassword(context).then((result) {
+          //   if (result != null) {
+          //     addPassword(databaseHelper, result);
+          //   }
+          // }).catchError((err) => print(err));
         },
         label: Text("Password"),
         icon: Icon(Icons.add),

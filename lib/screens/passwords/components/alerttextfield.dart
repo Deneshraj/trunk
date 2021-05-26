@@ -5,13 +5,11 @@ class AlertTextField extends StatelessWidget {
     Key key,
     @required this.controller,
     @required this.hintText,
-    this.obscureText = false,
     this.textInputType = TextInputType.text,
   }) : super(key: key);
 
   final TextEditingController controller;
   final String hintText;
-  final bool obscureText;
   final TextInputType textInputType;
 
   @override
@@ -20,7 +18,6 @@ class AlertTextField extends StatelessWidget {
       margin: EdgeInsets.all(10),
       child: TextField(
         autofocus: true,
-        obscureText: obscureText,
         textInputAction: TextInputAction.next,
         keyboardType: textInputType,
         decoration: InputDecoration(

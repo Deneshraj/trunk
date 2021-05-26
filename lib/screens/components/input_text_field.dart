@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:trunk/constants.dart';
 
 class InputTextField extends StatefulWidget {
@@ -6,8 +7,10 @@ class InputTextField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
   final TextInputAction textInputAction;
+  final TextInputType keyboardType;
   final bool autoFocus;
   final bool obscureText;
+  final List<TextInputFormatter> inputFormatters;
 
   const InputTextField({
     Key key,
@@ -16,7 +19,7 @@ class InputTextField extends StatefulWidget {
     this.hintText,
     this.textInputAction = TextInputAction.go,
     this.autoFocus = true,
-    this.obscureText = false,
+    this.obscureText = false, this.keyboardType = TextInputType.text, this.inputFormatters,
   }) : super(key: key);
   @override
   _InputTextFieldState createState() => _InputTextFieldState();
@@ -45,7 +48,9 @@ class _InputTextFieldState extends State<InputTextField> {
       obscureText: _obsText,
       autofocus: widget.autoFocus,
       onSubmitted: widget.onSubmitted,
+      keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(vertical: 7, horizontal: 20),
         isDense: true,

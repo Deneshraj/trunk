@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:trunk/screens/components/snackbar.dart';
 
 class FieldsDisplay extends StatefulWidget {
   const FieldsDisplay({
@@ -57,15 +57,9 @@ class _FieldsDisplayState extends State<FieldsDisplay> {
           (_isPass)
               ? InkWell(
                   onTap: () {
+                    Navigator.of(context).pop();
                     Clipboard.setData(ClipboardData(text: "$value"));
-                    Fluttertoast.showToast(
-                        msg: "Password Copied to Clipboard",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Color(0xaa3c4043),
-                        textColor: Colors.white,
-                        fontSize: 16.0);
+                    showSnackbar(context, "Password Copied to Clipboard");
                   },
                   child: Icon(Icons.copy),
                 )

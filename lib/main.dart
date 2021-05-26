@@ -13,6 +13,7 @@ import 'package:trunk/screens/notebook/notebook.dart';
 import 'package:trunk/screens/notes/components/addnote.dart';
 import 'package:trunk/screens/notes/components/editnote.dart';
 import 'package:trunk/screens/notes/notes.dart';
+import 'package:trunk/screens/passwords/components/add_password.dart';
 import 'package:trunk/screens/passwords/passwords.dart';
 import 'package:trunk/screens/share_notes/share_note_with_pass.dart';
 import 'package:trunk/utils/theme_notifier.dart';
@@ -167,6 +168,11 @@ class _TrunkState extends State<Trunk> {
                   ChangeNotifierProvider<DatabaseHelper>.value(
                     value: databaseHelperInit.databaseHelper,
                     child: Passwords(),
+                  ),
+              AddPassword.routeName: (context) =>
+                  ChangeNotifierProvider<DatabaseHelper>.value(
+                    value: databaseHelperInit.databaseHelper,
+                    child: AddPassword(),
                   ),
               UserKey.routeName: (context) =>
                   ChangeNotifierProvider<DatabaseHelper>.value(

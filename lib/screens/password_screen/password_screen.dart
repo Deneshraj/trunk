@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -73,6 +75,18 @@ class _PasswordScreenState extends State<PasswordScreen> {
     }
   }
 
+  bool _validate(String password) {
+    bool isValid = true;
+
+    if (password.length < 10) {
+      showSnackbar(
+          context, "Please Enter the password of atleast 10 characters");
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
   @override
   Widget build(BuildContext context) {
     final databaseHelperInit = Provider.of<DatabaseHelperInit>(context);
@@ -97,7 +111,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 text: "Decrypt Notebook",
                 onPressed: () async {
                   String password = _passwordController.text.trim();
-                  await _handleSubmit(databaseHelperInit, password);
+                  if (_validate(password)) {
+                    await _handleSubmit(databaseHelperInit, password);
+                  }
                 },
               ),
               Text(
