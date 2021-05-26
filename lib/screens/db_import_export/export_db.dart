@@ -28,7 +28,7 @@ class _ExportDbState extends State<ExportDb> {
         ),
         drawer: NavDrawer(),
         body: InputFilesButton(
-          text: "Export to",
+          text: "Export",
           onPressed: () async {
             Directory exportedDir = await getExternalStorageDirectory();
             if(exportedDir != null && exportedDir.path != null) {

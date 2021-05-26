@@ -23,11 +23,26 @@ class InputTextField extends StatefulWidget {
 }
 
 class _InputTextFieldState extends State<InputTextField> {
+  bool _obsText;
+  void toggleVisibility() {
+    setState(() {
+      _obsText = !_obsText;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _obsText = widget.obscureText;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
-      // TODO:Extract this widget and create separate widtet
-      obscureText: widget.obscureText,
+      // TODO:Extract this widget and create separate widget
+      obscureText: _obsText,
       autofocus: widget.autoFocus,
       onSubmitted: widget.onSubmitted,
       textInputAction: widget.textInputAction,
@@ -43,12 +58,22 @@ class _InputTextFieldState extends State<InputTextField> {
           borderSide: BorderSide(width: 5, color: kPrimaryColor),
           borderRadius: BorderRadius.circular(5),
         ),
+        suffixIcon: (widget.obscureText != null && widget.obscureText)
+            ? GestureDetector(
+                onTap: () {
+                  toggleVisibility();
+                },
+                child:
+                    Icon((_obsText) ? Icons.visibility : Icons.visibility_off),
+              )
+            : null,
       ),
       style: TextStyle(
         fontSize: 18,
         fontFamily: "mulish",
         fontWeight: FontWeight.w500,
       ),
+
       controller: widget.controller,
     );
   }
