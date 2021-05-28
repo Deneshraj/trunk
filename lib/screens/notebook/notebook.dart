@@ -173,7 +173,7 @@ class _NotebookState extends State<Notebook> {
       // Checking if the file exists
       if (file.existsSync()) {
         // Encrypting the Notebook
-        String encPath = await encryptNotebook(friendKey, path, nb.name);
+        String encPath = await encryptNotebook(friendKey, path, nb, helper);
 
         if (encPath != null) {
           await Share.shareFiles([

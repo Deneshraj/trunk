@@ -51,15 +51,20 @@ class _DecryptNotebookState extends State<DecryptNotebook> {
       createdAt: DateTime.now(),
     );
     await databaseHelper.insertNotebook(nb);
-    Notebooks addednb = await databaseHelper.getNotebookByName(nb.name);
+    Notebooks addedNb = await databaseHelper.getNotebookByName(nb.name);
 
     // Getting Notebook filename and writing data into it
-    String tempFileName = nb.fileName;
-    if(tempFileName != null) {
-      String dbFilePath = await databaseHelper.getDbPath(tempFileName);
-      File file = File(dbFilePath);
+    if(addedNb != null) {
+      String tempFileName = addedNb.fileName;
+      if(tempFileName != null) {
+        String dbFilePath = await databaseHelper.getDbPath(tempFileName);
+        File file = File(dbFilePath);
 
-      file.writeAsBytes(cipher.decryptAsBytes(map['encrypted_text']));
+        file.writeAsBytes(cipher.decryptAsBytes(map['encrypted_text']));
+        showSnackbar(context, "Notebook Added Successfully!");
+      }
+    } else {
+      showSnackbar(context, "Unable to write the Notebook!");
     }
   }
 

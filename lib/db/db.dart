@@ -198,7 +198,7 @@ class DatabaseHelper extends ChangeNotifier {
 
     while (!fileUnique) {
       fileName = getRandomString(7) + ".db";
-      List<Map<String, dynamic>> map = await getNotebooksByFileName(fileName);
+      List<Map<String, dynamic>> map = await getNotebooksByFileName(_cipher.encryptText(fileName));
 
       if (map.isEmpty) {
         fileUnique = true;
@@ -208,30 +208,38 @@ class DatabaseHelper extends ChangeNotifier {
     return fileName;
   }
 
-  Map<String, dynamic> _encrypt(Map<String, dynamic> map) {
+  Map<String, dynamic> _encryptUsingCipher(Map<String, dynamic> map, EncryptText cipher) {
     var encryptedMap = Map<String, dynamic>();
 
     map.forEach((key, value) {
       if (key == "id")
         encryptedMap[key] = value;
       else
-        encryptedMap[key] = _cipher.encryptText(map[key]);
+        encryptedMap[key] = cipher.encryptText(map[key]);
     });
 
     return encryptedMap;
   }
 
-  Map<String, dynamic> _decrypt(Map<String, dynamic> map) {
+  Map<String, dynamic> _encrypt(Map<String, dynamic> map) {
+    return _encryptUsingCipher(map, _cipher);
+  }
+
+  Map<String, dynamic> _decryptUsingCipher(Map<String, dynamic> map, EncryptText cipher) {
     var decryptedMap = Map<String, dynamic>();
 
     map.forEach((key, value) {
       if (key == "id")
         decryptedMap[key] = value;
       else
-        decryptedMap[key] = _cipher.decryptText(map[key]);
+        decryptedMap[key] = cipher.decryptText(map[key]);
     });
 
     return decryptedMap;
+  }
+
+  Map<String, dynamic> _decrypt(Map<String, dynamic> map) {
+    return _decryptUsingCipher(map, _cipher);
   }
 
   // CRUD Operations for notebook
@@ -271,10 +279,10 @@ class DatabaseHelper extends ChangeNotifier {
 
   Future<Notebooks> getNotebookByName(String name) async {
     Database db = await _openDb();
-    var res = await db.query(notebook, where: "name = '$name'");
-
+    var res = await db.query(notebook, where: "name = '${_cipher.encryptText(name)}'");
+    
     if(res.length > 0) {
-      return Notebooks.fromMapObject(res[0]);
+      return Notebooks.fromMapObject(_decrypt(res[0]));
     }
 
     return null;
@@ -327,6 +335,28 @@ class DatabaseHelper extends ChangeNotifier {
     return result;
   }
 
+  Future<void> processNotebookForSharing(Notebooks notebook, EncryptText cipher) async {
+    if(notebook.fileName.isNotEmpty) {
+      var result = await getNotesMapList(notebook);
+
+      for(int i = 0, count = result.length; i < count; i++) {
+        Map<String, dynamic> encryptedNote = _encryptUsingCipher(_decrypt(result[i]), cipher);
+        updateEncryptedNoteById(encryptedNote, notebook);
+      }
+    }
+  }
+
+  Future<void> openProcessedNotebook(Notebooks notebook, EncryptText cipher) async {
+    if(notebook.fileName.isNotEmpty) {
+      var result = await getNotesMapList(notebook);
+
+      for(int i = 0, count = result.length; i < count; i++) {
+        Map<String, dynamic> encryptedNote = _encrypt(_decryptUsingCipher(result[i], cipher));
+        updateEncryptedNoteById(encryptedNote, notebook);
+      }
+    }
+  }
+
   // CRUD Operations for Notes
   Future<List<Map<String, dynamic>>> getNotesMapList(Notebooks notebook) async {
     if (notebook.fileName != null) {
@@ -376,6 +406,17 @@ class DatabaseHelper extends ChangeNotifier {
       where: "id = '${note.id}'",
     );
     
+
+    return result;
+  }
+
+  Future<int> updateEncryptedNoteById(Map<String, dynamic> note, Notebooks notebook) async {
+    Database db = await _openDb(fileName: notebook.fileName);
+    var result = await db.update(
+      notes,
+      note,
+      where: "id = '${note['id']}'",
+    );
 
     return result;
   }
