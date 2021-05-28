@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/components/text_button.dart';
 import 'package:trunk/utils/db_zip.dart';
 import 'package:trunk/utils/exit_alert.dart';
 
@@ -27,7 +27,7 @@ class _ExportDbState extends State<ExportDb> {
           title: Text("Export DB"),
         ),
         drawer: NavDrawer(),
-        body: InputFilesButton(
+        body: CustomTextButton(
           text: "Export",
           onPressed: () async {
             Directory exportedDir = await getExternalStorageDirectory();

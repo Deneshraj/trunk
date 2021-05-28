@@ -7,6 +7,7 @@ import 'package:trunk/db/db_init.dart';
 import 'package:trunk/screens/db_import_export/export_db.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
+import 'package:trunk/screens/decrypt_notebook/decrypt_notebook.dart';
 import 'package:trunk/screens/friends_list/friends_list.dart';
 import 'package:trunk/screens/key/userkey.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
@@ -149,6 +150,10 @@ class _TrunkState extends State<Trunk> {
                     value: databaseHelperInit.databaseHelper,
                     child: Notebook(),
                   ),
+              DecryptNotebook.routeName: (context) => ChangeNotifierProvider<DatabaseHelper>.value(
+                value: databaseHelperInit.databaseHelper,
+                child: DecryptNotebook(),
+              ),
               Notes.routeName: (context) =>
                   ChangeNotifierProvider<DatabaseHelper>.value(
                     value: databaseHelperInit.databaseHelper,

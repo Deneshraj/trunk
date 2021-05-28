@@ -9,10 +9,11 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:trunk/constants.dart';
 import 'package:trunk/model/note.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/elevated_button.dart';
 import 'package:trunk/screens/components/modals.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/components/text_button.dart';
 import 'package:trunk/steganography/encoder.dart';
 import 'package:trunk/steganography/request/encode_request.dart';
 import 'package:trunk/steganography/response/encode_response.dart';
@@ -70,7 +71,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
           child: ListView(
             children: <Widget>[
               SizedBox(width: double.infinity),
-              InputFilesButton(
+              CustomTextButton(
                 text: "Select note",
                 onPressed: () async {
                   Note note = await _getNoteModal(databaseHelper);
@@ -84,7 +85,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
                 },
               ),
               (_note != null) ? Text("${_note.title}") : Container(),
-              InputFilesButton(
+              CustomTextButton(
                 text: "Select Friend",
                 onPressed: () async {
                   Map<String, dynamic> friend =
@@ -102,7 +103,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
               ),
               (_key != null) ? Text("${_key['name']}") : Container(),
               (widget.steg)
-                  ? InputFilesButton(
+                  ? CustomTextButton(
                       text: "Select Image to Encrypt",
                       onPressed: () async {
                         try {
@@ -134,7 +135,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
                   ? Text("OR", textAlign: TextAlign.center)
                   : Container(),
               (widget.steg)
-                  ? InputFilesButton(
+                  ? CustomTextButton(
                       text: "Use QR Steganography",
                       onPressed: () async {
                         setState(() {
@@ -146,7 +147,7 @@ class _ShareNoteWithPasswordState extends State<ShareNoteWithPassword> {
               (widget.steg == true && imgFileName != null)
                   ? Text("$imgFileName")
                   : Container(),
-              InputFilesButton(
+              CustomElevatedButton(
                 text: "Encrypt and Share",
                 onPressed: () async {
                   setState(() {

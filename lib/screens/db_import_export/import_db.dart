@@ -4,9 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
-import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/components/text_button.dart';
 import 'package:trunk/screens/password_screen/password_screen.dart';
 import 'package:trunk/utils/db_zip.dart';
 
@@ -23,7 +22,7 @@ class _ImportDbState extends State<ImportDb> {
       appBar: AppBar(
         title: Text("Import DB"),
       ),
-      body: InputFilesButton(
+      body: CustomTextButton(
         text: "Import Db",
         onPressed: () async {
           try {

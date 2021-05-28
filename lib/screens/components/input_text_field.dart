@@ -51,7 +51,7 @@ class _InputTextFieldState extends State<InputTextField> {
       textInputAction: widget.textInputAction,
       inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(vertical: 7, horizontal: 20),
+        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         isDense: true,
         hintText: widget.hintText,
         border: UnderlineInputBorder(

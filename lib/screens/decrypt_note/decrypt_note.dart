@@ -10,10 +10,11 @@ import 'package:trunk/db/db.dart';
 import 'package:trunk/model/keys.dart';
 import 'package:trunk/model/note.dart';
 import 'package:trunk/model/notebook.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/elevated_button.dart';
 import 'package:trunk/screens/components/modals.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
+import 'package:trunk/screens/components/text_button.dart';
 import 'package:trunk/steganography/decoder.dart';
 import 'package:trunk/steganography/response/decode_response.dart';
 import 'package:trunk/utils/exit_alert.dart';
@@ -58,7 +59,7 @@ class _DecryptNoteState extends State<DecryptNote> {
 
     EncryptText cipher =
         EncryptText(enc.Key(Uint8List.fromList(key.codeUnits)));
-    String decryptedContents = cipher.aesDecrypt(map['encrypted_text']);
+    String decryptedContents = cipher.decryptText(map['encrypted_text']);
 
     setState(() {
       note = Note.fromMapObject(jsonDecode(decryptedContents));
@@ -78,7 +79,7 @@ class _DecryptNoteState extends State<DecryptNote> {
         body: Column(
           children: <Widget>[
             SizedBox(width: double.infinity),
-            InputFilesButton(
+            CustomTextButton(
               text: "Choose Note File",
               onPressed: () async {
                 try {
@@ -105,7 +106,7 @@ class _DecryptNoteState extends State<DecryptNote> {
             ),
             (fileName != null) ? Text("$fileName") : Container(),
             Text("OR"),
-            InputFilesButton(
+            CustomTextButton(
               text: "Choose Image File",
               onPressed: () async {
                 try {
@@ -132,7 +133,7 @@ class _DecryptNoteState extends State<DecryptNote> {
               },
             ),
             (imgFileName != null) ? Text("$imgFileName") : Container(),
-            InputFilesButton(
+            CustomElevatedButton(
               text: "Decrypt Note",
               onPressed: () async {
                 try {
@@ -179,7 +180,7 @@ class _DecryptNoteState extends State<DecryptNote> {
                   )
                 : Container(),
             (note != null)
-                ? InputFilesButton(
+                ? CustomTextButton(
                     text: "Add Note to Notebook",
                     onPressed: () async {
                       Notebooks notebook =

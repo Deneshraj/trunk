@@ -180,9 +180,7 @@ class _NotebookState extends State<Notebook> {
             encPath,
           ]);
 
-          setState(() {
-            _appBar = _defaultBar;
-          });
+          changeAppbarToDefault();
         } else {
           // Notebook Not Encrypted
           print("Path is null");
@@ -204,9 +202,7 @@ class _NotebookState extends State<Notebook> {
     Notebooks nb = notebooks[_selected];
     if (option == DELETE) {
       deleteNotebook(databaseHelper, nb);
-      setState(() {
-        _appBar = _defaultBar;
-      });
+      changeAppbarToDefault();
     } else if (option == SHARE_WITH_FRIEND) {
       shareNotebookWithFriend(nb, context, databaseHelper);
     } else if (option == UPDATE_NOTEBOOK) {
@@ -225,6 +221,7 @@ class _NotebookState extends State<Notebook> {
 
     if (!_initialized) {
       updateNotebooks(databaseHelper);
+      changeAppbarToDefault();
     }
 
     // Getting AppBar Title

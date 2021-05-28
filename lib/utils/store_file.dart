@@ -31,7 +31,7 @@ Future<String> storeFileLocally(String fileName, String dirName, String contents
 }
 
 Future<String> storeTemporaryFile(String fileName, String contents) async {
-  var dir = await getExternalStorageDirectory();
+  var dir = await getTemporaryDirectory();
   var path = join(dir.path, fileName);
   
   await new Future.delayed(new Duration(seconds: 1));

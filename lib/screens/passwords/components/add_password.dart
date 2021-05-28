@@ -4,14 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/model/password.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/elevated_button.dart';
 import 'package:trunk/screens/components/input_text_field.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/passwords/components/alert_password_field.dart';
 import 'package:trunk/screens/passwords/components/alerttextfield.dart';
 import 'package:trunk/utils/app_bar.dart';
 import 'package:trunk/utils/generate_random_string.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
 
 class AddPassword extends StatefulWidget {
   static const routeName = "AddPassword";
@@ -160,7 +159,7 @@ class _AddPasswordState extends State<AddPassword> {
               },
             ),
           ),
-          InputFilesButton(
+          CustomElevatedButton(
             text: "Add",
             onPressed: () {
               String url = _urlController.text.toString();

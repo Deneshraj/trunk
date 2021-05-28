@@ -192,7 +192,7 @@ class DatabaseHelper extends ChangeNotifier {
     return null;
   }
 
-  Future<String> _generateUniqueFileName() async {
+  Future<String> generateUniqueFileName() async {
     bool fileUnique = false;
     String fileName;
 
@@ -215,7 +215,7 @@ class DatabaseHelper extends ChangeNotifier {
       if (key == "id")
         encryptedMap[key] = value;
       else
-        encryptedMap[key] = _cipher.aesEncrypt(map[key]);
+        encryptedMap[key] = _cipher.encryptText(map[key]);
     });
 
     return encryptedMap;
@@ -228,7 +228,7 @@ class DatabaseHelper extends ChangeNotifier {
       if (key == "id")
         decryptedMap[key] = value;
       else
-        decryptedMap[key] = _cipher.aesDecrypt(map[key]);
+        decryptedMap[key] = _cipher.decryptText(map[key]);
     });
 
     return decryptedMap;
@@ -269,9 +269,20 @@ class DatabaseHelper extends ChangeNotifier {
     return [];
   }
 
+  Future<Notebooks> getNotebookByName(String name) async {
+    Database db = await _openDb();
+    var res = await db.query(notebook, where: "name = '$name'");
+
+    if(res.length > 0) {
+      return Notebooks.fromMapObject(res[0]);
+    }
+
+    return null;
+  }
+
   Future<int> insertNotebook(Notebooks nb) async {
     Database db = await _openDb();
-    String fileName = await _generateUniqueFileName();
+    String fileName = await generateUniqueFileName();
     nb.fileName = fileName;
 
     var result = await db.insert(
@@ -463,7 +474,7 @@ class DatabaseHelper extends ChangeNotifier {
   Future<Keys> getKeyByTitle(String title) async {
     Database db = await _openDb();
     var result =
-        await db.query(keys, where: "title = '${_cipher.aesEncrypt(title)}'");
+        await db.query(keys, where: "title = '${_cipher.encryptText(title)}'");
     
 
     if (result.length > 0) {

@@ -10,6 +10,7 @@ import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/db_import_export/export_db.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/decrypt_note/decrypt_note.dart';
+import 'package:trunk/screens/decrypt_notebook/decrypt_notebook.dart';
 import 'package:trunk/screens/friends_list/friends_list.dart';
 import 'package:trunk/screens/key/userkey.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
@@ -66,7 +67,7 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             title: Text("Import DB"),
             onTap: () {
-              Navigator.pushReplacementNamed(context, ImportDb.routeName);
+              Navigator.pushNamed(context, ImportDb.routeName);
             },
           ),
           ListTile(
@@ -117,6 +118,12 @@ class NavDrawer extends StatelessWidget {
             title: Text("Decrypt Note"),
             onTap: () {
               Navigator.pushReplacementNamed(context, DecryptNote.routeName);
+            },
+          ),
+          ListTile(
+            title: Text("Decrypt Notebook"),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, DecryptNotebook.routeName);
             },
           ),
           ListTile(

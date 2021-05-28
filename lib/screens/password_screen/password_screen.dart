@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
-import 'package:trunk/screens/components/input_files_button.dart';
+import 'package:trunk/screens/components/elevated_button.dart';
 import 'package:trunk/screens/components/input_text_field.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
@@ -144,7 +143,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 hintText: "Enter the Master password",
                 controller: _passwordController,
               ),
-              InputFilesButton(
+              CustomElevatedButton(
                 text: "Decrypt Notebook",
                 onPressed: () async {
                   String password = _passwordController.text.trim();
@@ -173,7 +172,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 "OR",
                 textAlign: TextAlign.center,
               ),
-              InputFilesButton(
+              CustomElevatedButton(
                 text: "Import DB",
                 onPressed: () {
                   Navigator.pushNamed(context, ImportDb.routeName);
