@@ -11,7 +11,7 @@ Future<String> encryptNote(Map<String, dynamic> publicKey, Note note) async {
   String encryptedKey = await rsaEncrypt(publicKey['public_key'], key.bytes);
   Map<String, dynamic> noteMap = note.toMap();
   EncryptText encryptor = EncryptText(key);
-    String encryptedText = encryptor.aesEncrypt(jsonEncode(noteMap));
+    String encryptedText = encryptor.encryptText(jsonEncode(noteMap));
   Map<String, dynamic> map = {
     "encrypted_text": encryptedText,
     'key_title': publicKey['title'],

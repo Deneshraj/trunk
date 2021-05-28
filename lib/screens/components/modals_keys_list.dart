@@ -27,29 +27,44 @@ class _ModalKeysListState extends State<ModalKeysList> {
 
   @override
   Widget build(BuildContext context) {
-    if(!_initialized) {
+    if (!_initialized) {
       getKeys();
     }
-    
-    return Container(
-      child: ListView.builder(
-        itemCount: keysList.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text("${keysList[index].name}"),
-              onTap: () {
-                Map<String, dynamic> map = {
-                  'name': keysList[index].name,
-                  'title': keysList[index].title,
-                  'public_key': keysList[index].key,
-                };
-                Navigator.pop(context, map);
-              },
-            ),
-          );
-        },
-      ),
+
+    return Column(
+      children: <Widget>[
+        SizedBox(height: 20),
+        Text(
+          "Keys",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+          ),
+        ),
+        SizedBox(height: 20),
+        (keysList.length > 0)
+            ? Expanded(
+                child: ListView.builder(
+                  itemCount: keysList.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text("${keysList[index].name}"),
+                        onTap: () {
+                          Map<String, dynamic> map = {
+                            'name': keysList[index].name,
+                            'title': keysList[index].title,
+                            'public_key': keysList[index].key,
+                          };
+                          Navigator.pop(context, map);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              )
+            : Text("No Keys Added Yet!"),
+      ],
     );
   }
 }

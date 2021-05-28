@@ -26,6 +26,11 @@ class UserKey extends StatefulWidget {
 }
 
 class UserKeyState extends State<UserKey> {
+  List<String> _options = [
+    DELETE,
+    SHARE_WITH_FRIEND,
+  ];
+
   List<Keys> keys = [];
   int _selected;
   bool _initialized = false;
@@ -203,7 +208,7 @@ class UserKeyState extends State<UserKey> {
             optionsAction(string, databaseHelper);
           },
           itemBuilder: (BuildContext context) {
-            return options.map((option) {
+            return _options.map((option) {
               return PopupMenuItem<String>(
                 value: option,
                 child: Text(option),

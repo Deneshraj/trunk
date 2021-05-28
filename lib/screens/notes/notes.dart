@@ -19,6 +19,11 @@ class Notes extends StatefulWidget {
 }
 
 class _NotesState extends State<Notes> {
+  List<String> _options = [
+    DELETE,
+    SHARE_WITH_FRIEND,
+  ];
+
   // TODO:Add Modal to view notes
   static final AppBar _defaultBar = AppBar(
     title: Text("Notes"),
@@ -82,7 +87,6 @@ class _NotesState extends State<Notes> {
       });
     } else if (option == SHARE_WITH_FRIEND) {
       Note note = notes[_selected];
-      // TODO:Make only one file to share
       Map<String, dynamic> publicKey =
           await _getKeyToEncryptModal(context, databaseHelper);
 
@@ -137,7 +141,7 @@ class _NotesState extends State<Notes> {
             optionsAction(context, databaseHelper, string, _notebook);
           },
           itemBuilder: (BuildContext context) {
-            return options.map((option) {
+            return _options.map((option) {
               return PopupMenuItem<String>(
                 value: option,
                 child: Text(option),

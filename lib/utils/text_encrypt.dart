@@ -10,13 +10,23 @@ class EncryptText {
     this.encrypter = Encrypter(AES(_key, mode: AESMode.cbc));
   }
 
-  String aesEncrypt(String text) {
+  String encryptText(String text) {
     Encrypted encrypted = encrypter.encrypt(text, iv: iv);
     return encrypted.base64;
   }
 
-  String aesDecrypt(String encryptedText) {
+  String encryptAsBytes(List<int> bytes) {
+    Encrypted encrypted = encrypter.encryptBytes(bytes, iv: iv);
+    return encrypted.base64;
+  }
+
+  String decryptText(String encryptedText) {
     Encrypted encrypted = Encrypted.fromBase64(encryptedText);
     return encrypter.decrypt(encrypted, iv: iv);
+  }
+
+  List<int> decryptAsBytes(String encryptedBytes) {
+    Encrypted encrypted = Encrypted.fromBase64(encryptedBytes);
+    return encrypter.decryptBytes(encrypted, iv: iv);
   }
 }

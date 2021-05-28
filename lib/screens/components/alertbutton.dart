@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trunk/constants.dart';
 
 class AlertButton extends StatelessWidget {
   final String text;
@@ -9,8 +10,7 @@ class AlertButton extends StatelessWidget {
     Key key,
     this.text,
     this.onPressed,
-    // TODO:Add the primary color to constants
-    this.backgroundColor = Colors.deepPurple,
+    this.backgroundColor = kPrimaryColor,
   }) : super(key: key);
 
   @override

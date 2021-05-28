@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+
 class Notebooks {
-  // TODO: Add required and not null constraints
   int id;
   String name;
   String fileName;
   DateTime createdAt;
 
-  Notebooks({ this.name, this.createdAt });
-  Notebooks.withId({ this.id, this.name, this.createdAt });
+  Notebooks({ @required this.name, @required this.createdAt });
+  Notebooks.withId({ @required this.id, @required this.name, @required this.createdAt });
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = new Map<String,dynamic>();
@@ -18,8 +19,13 @@ class Notebooks {
       map['file_name'] = fileName;
     } else throw Exception("File name should not be null");
 
-    map['name'] = name;
-    map['created_at'] = createdAt.toString();
+    if(name != null) {
+      map['name'] = name;
+    } else throw Exception("Name Should not be null");
+
+    if(createdAt != null) {
+      map['created_at'] = createdAt.toString();
+    } else throw Exception("Created At Should not be null");
 
     return map;
   }

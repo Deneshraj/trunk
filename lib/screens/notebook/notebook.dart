@@ -1,28 +1,35 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/model/notebook.dart';
 import 'package:trunk/screens/components/alertbutton.dart';
 import 'package:trunk/screens/components/input_text_field.dart';
+import 'package:trunk/screens/components/modals.dart';
 import 'package:trunk/screens/components/navdrawer.dart';
 import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/notes/notes.dart';
 import 'package:trunk/screens/passwords/passwords.dart';
+import 'package:trunk/utils/encrypt_notebook.dart';
 import 'package:trunk/utils/exit_alert.dart';
 import '../../constants.dart';
 import 'components/nbcard.dart';
 
 class Notebook extends StatefulWidget {
   static const routeName = "Notebook";
-  // TODO:Add Route Name to all screens
-  // Eg., static const routeName = '/notebook';
   @override
   _NotebookState createState() => _NotebookState();
 }
 
 class _NotebookState extends State<Notebook> {
-  // TODO:Add the Update Operation
-  // To switch app bar on long press
+  List<String> _options = [
+    DELETE,
+    SHARE_WITH_FRIEND,
+    UPDATE_NOTEBOOK,
+  ];
+
   static final AppBar _defaultBar = AppBar(
     title: Text(
       "Trunk",
@@ -32,7 +39,7 @@ class _NotebookState extends State<Notebook> {
   AppBar _appBar = _defaultBar;
   List<Notebooks> notebooks = [];
   bool _initialized = false;
-  int _selected;
+  int _selected = 1;
 
   void initState() {
     super.initState();
@@ -74,6 +81,7 @@ class _NotebookState extends State<Notebook> {
   void changeAppbarToDefault() {
     setState(() {
       _appBar = _defaultBar;
+      _selected = -1;
     });
   }
 
@@ -144,14 +152,70 @@ class _NotebookState extends State<Notebook> {
         });
   }
 
-  void optionsAction(DatabaseHelper databaseHelper, String option) {
+  Future<Map<String, dynamic>> _getKeyToEncryptModal(
+      BuildContext context, DatabaseHelper databaseHelper) {
+    return getKeyToEncryptModal(context, databaseHelper);
+  }
+
+  void shareNotebookWithFriend(
+    Notebooks nb,
+    BuildContext context,
+    DatabaseHelper helper,
+  ) async {
+    // Getting the Key to Share
+    Map<String, dynamic> friendKey =
+        await _getKeyToEncryptModal(context, helper);
+
+    if (friendKey != null) {
+      String path = await helper.getDbPath(nb.fileName);
+      File file = File(path);
+
+      // Checking if the file exists
+      if (file.existsSync()) {
+        // Encrypting the Notebook
+        String encPath = await encryptNotebook(friendKey, path, nb.name);
+
+        if (encPath != null) {
+          await Share.shareFiles([
+            encPath,
+          ]);
+
+          setState(() {
+            _appBar = _defaultBar;
+          });
+        } else {
+          // Notebook Not Encrypted
+          print("Path is null");
+          showSnackbar(context, "Unable to share");
+        }
+      } else {
+        showSnackbar(context, "DB Doesn't Exist!");
+      }
+    } else {
+      showSnackbar(context, "Please select a key to Encrypt");
+    }
+  }
+
+  void optionsAction(
+    BuildContext context,
+    DatabaseHelper databaseHelper,
+    String option,
+  ) async {
+    Notebooks nb = notebooks[_selected];
     if (option == DELETE) {
-      deleteNotebook(databaseHelper, notebooks[_selected]);
+      deleteNotebook(databaseHelper, nb);
       setState(() {
         _appBar = _defaultBar;
       });
     } else if (option == SHARE_WITH_FRIEND) {
-      print("Sharing With Friend");
+      shareNotebookWithFriend(nb, context, databaseHelper);
+    } else if (option == UPDATE_NOTEBOOK) {
+      String notebookName = await getNotebook(context);
+      Notebooks nb = notebooks[_selected];
+      nb.name = notebookName;
+
+      int res = await databaseHelper.updateNotebook(nb);
+      print(res);
     }
   }
 
@@ -163,9 +227,9 @@ class _NotebookState extends State<Notebook> {
       updateNotebooks(databaseHelper);
     }
 
+    // Getting AppBar Title
     AppBar _selectBar = AppBar(
-      // TODO:Write a function that returns this appbar
-      title: Text(""),
+      title: Text("Notebook"),
       leading: GestureDetector(
         onTap: () {
           changeAppbarToDefault();
@@ -174,11 +238,11 @@ class _NotebookState extends State<Notebook> {
       ),
       actions: <Widget>[
         PopupMenuButton<String>(
-          onSelected: (string) {
-            optionsAction(databaseHelper, string);
+          onSelected: (option) {
+            optionsAction(context, databaseHelper, option);
           },
           itemBuilder: (BuildContext context) {
-            return options.map((option) {
+            return _options.map((option) {
               return PopupMenuItem<String>(
                 value: option,
                 child: Text(option),
@@ -202,7 +266,9 @@ class _NotebookState extends State<Notebook> {
               child: NBCard(
                 text: PASSWORD,
                 onTap: () {
-                  Navigator.pushNamed(context, Passwords.routeName);
+                  if (_selected < 0) {
+                    Navigator.pushNamed(context, Passwords.routeName);
+                  }
                 },
                 border: Border(
                   left: BorderSide(color: Colors.deepPurple, width: 5.0),
@@ -220,12 +286,19 @@ class _NotebookState extends State<Notebook> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) => NBCard(
                   text: notebooks[index].name,
+                  selected: (_selected == index),
                   onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      Notes.routeName,
-                      arguments: notebooks[index],
-                    );
+                    if (_selected >= 0) {
+                      setState(() {
+                        _selected = index;
+                      });
+                    } else {
+                      Navigator.pushNamed(
+                        context,
+                        Notes.routeName,
+                        arguments: notebooks[index],
+                      );
+                    }
                   },
                   onLongPress: () {
                     setState(() {

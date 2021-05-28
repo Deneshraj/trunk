@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:trunk/db/db.dart';
 import 'package:trunk/db/db_init.dart';
@@ -12,6 +14,7 @@ import 'package:trunk/screens/components/snackbar.dart';
 import 'package:trunk/screens/db_import_export/import_db.dart';
 import 'package:trunk/screens/notebook/notebook.dart';
 import 'package:trunk/utils/exit_alert.dart';
+import 'package:trunk/utils/generate_random_string.dart';
 
 Future<DatabaseHelper> createDatabaseHelperInstance(String password) async {
   try {
@@ -44,6 +47,34 @@ class PasswordScreen extends StatefulWidget {
 
 class _PasswordScreenState extends State<PasswordScreen> {
   TextEditingController _passwordController = new TextEditingController();
+  bool _isFirstTime = false;
+
+  Future<bool> isFirstTime() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+
+     var isFirstTime = pref.getBool('first_time');
+     if (isFirstTime != null && !isFirstTime) {
+       pref.setBool('first_time', false);
+       return false;
+     } else {
+       pref.setBool('first_time', false);
+       return true;
+     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timer(Duration(seconds: 3), () {
+    isFirstTime().then((isFirstTime) {
+      setState(() {
+        _isFirstTime = isFirstTime;
+      });
+     });
+    }
+   );
+  }
 
   Future<void> _handleSubmit(
     DatabaseHelperInit databaseHelperInit,
@@ -56,6 +87,10 @@ class _PasswordScreenState extends State<PasswordScreen> {
         if (databaseHelper != null) {
           databaseHelperInit.setDatabaseHelper(databaseHelper);
           showSnackbar(context, "Welcome to Trunk");
+
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setBool('first_time', true);
+
           Navigator.pushReplacementNamed(
             context,
             Notebook.routeName,
@@ -90,6 +125,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final databaseHelperInit = Provider.of<DatabaseHelperInit>(context);
+    Size size = MediaQuery.of(context).size;
+
     return WillPopScope(
       onWillPop: () => exitAlert(context),
       child: Scaffold(
@@ -116,6 +153,22 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   }
                 },
               ),
+              (!_isFirstTime)
+                  ? Container(
+                      width: size.width * 0.6,
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        child: Text("Generate a Random Password"),
+                        onPressed: () {
+                          String randomPassword =
+                              generateRandomString(18, 1, "()~`");
+                          setState(() {
+                            _passwordController.text = randomPassword;
+                          });
+                        },
+                      ),
+                    )
+                  : Text(""),
               Text(
                 "OR",
                 textAlign: TextAlign.center,

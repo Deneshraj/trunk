@@ -16,6 +16,11 @@ class Passwords extends StatefulWidget {
 }
 
 class _PasswordsState extends State<Passwords> {
+  List<String> _options = [
+    DELETE,
+    SHARE_WITH_FRIEND,
+  ];
+
   // TODO: Categories of passwords like banking, social media etc.,
   TextEditingController _urlController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
@@ -45,182 +50,6 @@ class _PasswordsState extends State<Passwords> {
     } else {
       print("Invalid Option");
     }
-  }
-
-  Future<Password> _addPassword(BuildContext context) {
-    return showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
-        backgroundColor: Theme.of(context).cardColor,
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    SizedBox(height: 30),
-                    Text(
-                      "Add Password",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    AlertTextField(
-                      controller: _urlController,
-                      hintText: "URL",
-                    ),
-                    AlertTextField(
-                      controller: _emailController,
-                      hintText: "Email",
-                    ),
-                    AlertTextField(
-                      controller: _passwordController,
-                      hintText: "Password",
-                      // obscureText: true,
-                    ),
-                    Text(
-                      "OR",
-                      textAlign: TextAlign.center,
-                    ),
-                    TextButton(
-                      child: Text("Generate a Random Password"),
-                      onPressed: () {
-                        String randomPassword =
-                            generateRandomString(18, 1, "()~`");
-                        print(randomPassword);
-                      },
-                    ),
-                    SizedBox(height: 10),
-                  ],
-                ),
-              ),
-            ));
-    // return showModalBottomSheet(
-    //     backgroundColor: Colors.transparent,
-    //     isScrollControlled: true,
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return Wrap(
-    //         children: <Widget>[
-    //           Container(
-    //             color: Colors.transparent,
-    //             height: MediaQuery.of(context).size.height * 0.7,
-    //             child: Container(
-    //               decoration: BoxDecoration(
-    //                 color: Theme.of(context).cardColor,
-    //                 borderRadius: BorderRadius.only(
-    //                   topLeft: Radius.circular(10),
-    //                   topRight: Radius.circular(10),
-    //                 ),
-    //               ),
-    //               child: ListView(
-    //                 children: <Widget>[
-    //                   SizedBox(height: 30),
-    //                   Text(
-    //                     "Add Password",
-    //                     textAlign: TextAlign.center,
-    //                     style: TextStyle(
-    //                       fontSize: 20,
-    //                       fontWeight: FontWeight.bold,
-    //                     ),
-    //                   ),
-    //                   SizedBox(height: 20),
-    //                   AlertTextField(
-    //                     controller: _urlController,
-    //                     hintText: "URL",
-    //                   ),
-    //                   AlertTextField(
-    //                     controller: _emailController,
-    //                     hintText: "Email",
-    //                   ),
-    //                   AlertTextField(
-    //                     controller: _passwordController,
-    //                     hintText: "Password",
-    //                     obscureText: true,
-    //                   ),
-    //                   Text(
-    //                     "OR",
-    //                     textAlign: TextAlign.center,
-    //                   ),
-    //                   TextButton(
-    //                     child: Text("Generate a Random Password"),
-    //                     onPressed: () {
-    //                       String randomPassword =
-    //                           generateRandomString(18, 1, "()~`");
-    //                       print(randomPassword);
-    //                     },
-    //                   )
-    //                 ],
-    //               ),
-    //             ),
-    //           )
-    //         ],
-    //       );
-    //     });
-
-    // return showModalBottomSheet(
-    //     context: context,
-    //     builder: (context) {
-    //       return;
-    //     AlertButton(
-    //       text: "Add",
-    //       onPressed: () {
-    //         String url = _urlController.text.toString();
-    //         String email = _emailController.text.toString();
-    //         String password = _passwordController.text.toString();
-    //         String msg = "";
-
-    //         if (url.isEmpty) {
-    //           if (msg.isEmpty)
-    //             msg += "Please Enter valid URL";
-    //           else
-    //             msg += " URL ";
-    //         }
-
-    //         if (email.isEmpty) {
-    //           if (msg.isEmpty)
-    //             msg += "Please Enter valid Email";
-    //           else
-    //             msg += " Email ";
-    //         }
-
-    //         if (password.isEmpty) {
-    //           if (msg.isEmpty)
-    //             msg += "Please Enter valid Password";
-    //           else
-    //             msg += " Password ";
-    //         }
-
-    //         if (msg.isEmpty) {
-    //           Password returnPass = new Password(
-    //             title: url,
-    //             username: email,
-    //             password: password,
-    //           );
-    //           Navigator.of(context).pop(returnPass);
-    //         } else {
-    //           showSnackbar(context, msg);
-    //           Navigator.of(context).pop();
-    //         }
-    //       },
-    //     ),
-    //     AlertButton(
-    //       text: "Cancel",
-    //       onPressed: () {
-    //         Navigator.of(context).pop();
-    //       },
-    //       backgroundColor: Colors.grey,
-    //     ),
-    //   ],
-    // );
-    // });
   }
 
   void updatePasswords(DatabaseHelper databaseHelper) async {
@@ -311,7 +140,7 @@ class _PasswordsState extends State<Passwords> {
             optionsAction(databaseHelper, string);
           },
           itemBuilder: (BuildContext context) {
-            return options.map((option) {
+            return _options.map((option) {
               return PopupMenuItem<String>(
                 value: option,
                 child: Text(option),
@@ -348,14 +177,9 @@ class _PasswordsState extends State<Passwords> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           var res = await Navigator.pushNamed(context, AddPassword.routeName);
-          if(res != null && res == true) {
+          if (res != null && res == true) {
             updatePasswords(databaseHelper);
           }
-          // _addPassword(context).then((result) {
-          //   if (result != null) {
-          //     addPassword(databaseHelper, result);
-          //   }
-          // }).catchError((err) => print(err));
         },
         label: Text("Password"),
         icon: Icon(Icons.add),

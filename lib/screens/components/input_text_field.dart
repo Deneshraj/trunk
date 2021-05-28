@@ -44,7 +44,6 @@ class _InputTextFieldState extends State<InputTextField> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      // TODO:Extract this widget and create separate widget
       obscureText: _obsText,
       autofocus: widget.autoFocus,
       onSubmitted: widget.onSubmitted,

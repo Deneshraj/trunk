@@ -76,7 +76,6 @@ class _DecryptNoteState extends State<DecryptNote> {
         ),
         drawer: NavDrawer(),
         body: Column(
-          // TODO:To make this as new widget in new file to avoid redundancy in share_note page
           children: <Widget>[
             SizedBox(width: double.infinity),
             InputFilesButton(
@@ -150,16 +149,13 @@ class _DecryptNoteState extends State<DecryptNote> {
                       imgNotePath = null;
                     });
                   } else {
-                    if (this.notePath != null) {
+                    if (this.notePath != null && this.notePath.endsWith('.nt')) {
                       File noteFile = File(notePath);
                       String noteContents = await noteFile.readAsString();
                       _saveNotes(databaseHelper, noteContents);
-                      // TODO:To check note to not add to Passwords notebook
-                      // TODO:To check file format to decrypt it accordingly
                     } else if (imgNotePath != null) {
-                      print("$imgNotePath");
                       File noteFile = File(imgNotePath);
-                      print("${(await noteFile.readAsBytes()).length}");
+                      
 
                       if ((await noteFile.readAsBytes()).length > 1000) {
                         DecodeResponse res = decodeMessageFromImage(await noteFile.readAsBytes());

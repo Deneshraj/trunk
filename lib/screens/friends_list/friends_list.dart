@@ -16,6 +16,11 @@ class FriendsList extends StatefulWidget {
 }
 
 class _FriendsListState extends State<FriendsList> {
+  List<String> _options = [
+    DELETE,
+    SHARE_WITH_FRIEND,
+  ];
+
   List<Friend> friendsList = [];
   static final _defaultBar = AppBar(
     title: Text("Friends List"),
@@ -53,7 +58,6 @@ class _FriendsListState extends State<FriendsList> {
     BuildContext context,
     DatabaseHelper databaseHelper,
   ) {
-    // TODO:Update Functionality
     return showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -90,7 +94,7 @@ class _FriendsListState extends State<FriendsList> {
             optionsAction(databaseHelper, string);
           },
           itemBuilder: (BuildContext context) {
-            return options.map((option) {
+            return _options.map((option) {
               return PopupMenuItem<String>(
                 value: option,
                 child: Text(option),

@@ -9,7 +9,7 @@ class DatabaseHelperInit with ChangeNotifier {
     notifyListeners();
   }
 
-  get databaseHelper {
+  DatabaseHelper get databaseHelper {
     return _databaseHelper;
   }
 }

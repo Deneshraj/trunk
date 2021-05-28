@@ -10,7 +10,6 @@ import 'modals_keys_list.dart';
 Future<Map<String, dynamic>> getKeyToEncryptModal(
     BuildContext context, DatabaseHelper databaseHelper) {
   return showModalBottomSheet(
-    // TODO:To make this modal sheet as custom and pass only context and builder
     context: context,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.only(

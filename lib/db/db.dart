@@ -14,9 +14,6 @@ import 'package:trunk/model/notebook.dart';
 import 'package:trunk/model/password.dart';
 import 'package:trunk/utils/text_encrypt.dart';
 
-// TODO:Change the database from sqlite to hive
-// TODO:Validate all values (passed as arguments)
-
 class DatabaseHelper extends ChangeNotifier {
   static DatabaseHelper _databaseHelper;
 
@@ -42,11 +39,16 @@ class DatabaseHelper extends ChangeNotifier {
 
   Future<void> createDbFile() async {
     String path = await getDbPath(dbFileName);
-    File file = File(path);
-    bool fileExist = await file.exists();
+    bool fileExist = await isDbExists();
     if (!fileExist) {
       await File(path).create(recursive: true);
     }
+  }
+
+  Future<bool> isDbExists() async {
+    String path = await getDbPath(dbFileName);
+    File file = File(path);
+    return await file.exists();
   }
 
   Future<Database> initDb() async {
@@ -234,12 +236,9 @@ class DatabaseHelper extends ChangeNotifier {
 
   // CRUD Operations for notebook
   Future<List<Map<String, dynamic>>> getNotebookMapList() async {
-    // TODO: Add a method for secure operation.
     Database db = await _openDb();
     if (db != null) {
       var result = await db.query(notebook, orderBy: 'id ASC');
-      
-
       return result;
     }
     return null;
@@ -248,7 +247,6 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getNotebooksByFileName(String name) async {
     Database db = await _openDb();
     var res = await db.query(notebook, where: "file_name = '$name'");
-    
 
     return res;
   }
@@ -284,6 +282,21 @@ class DatabaseHelper extends ChangeNotifier {
     
 
     return result;
+  }
+
+  Future<int> updateNotebook(Notebooks nb) async {
+    Database db = await _openDb();
+    int res = -1;
+    
+    // Getting the Notebook from Database
+    List<Map> nbIdMap = await db.query(notebook, where: "id = ${nb.id}");
+    List<Map> nbNameMap = await db.query(notebook, where: "name = ${nb.name}");
+
+    if(nbNameMap.isEmpty && nbIdMap.isNotEmpty) {
+      res = await db.update(notebook, nb.toMap(), where: 'id = ${nb.id}');
+    }
+
+    return res;
   }
 
   Future<int> deleteNotebook(Notebooks nb) async {
